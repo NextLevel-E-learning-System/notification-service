@@ -3,8 +3,8 @@ import cors from 'cors';
 import pino from 'pino';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
-import { startUserEventsConsumer } from './workers/userEventsConsumer';
-import { withClient } from './db';
+import { startUserEventsConsumer } from './workers/userEventsConsumer.js';
+import { withClient } from './db.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 interface Notificacao { id: string; usuario_id: string; titulo: string; mensagem: string; lida: boolean; data_criacao: string; canal?: string | null; tipo?: string | null; }
