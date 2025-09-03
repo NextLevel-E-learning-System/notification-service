@@ -2,8 +2,6 @@
   "openapi": "3.0.3",
   "info": { "title": "Notification Service API", "version": "1.0.0" },
   "paths": {
-    "/health/live": { "get": { "summary": "Liveness", "responses": { "200": { "description": "OK" } } } },
-    "/health/ready": { "get": { "summary": "Readiness", "responses": { "200": { "description": "OK" } } } },
     "/notifications/v1": { "get": { "summary": "Listar notificações do usuário", "tags": ["notifications"], "parameters": [{ "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Lista" }, "401": { "description": "Sem contexto" } } }, "post": { "summary": "Criar notificação", "tags": ["notifications"], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["usuario_id", "titulo", "mensagem"], "properties": { "usuario_id": { "type": "string", "format": "uuid" }, "titulo": { "type": "string" }, "mensagem": { "type": "string" }, "tipo": { "type": "string" }, "canal": { "type": "string" } } } } } }, "responses": { "201": { "description": "Criado" } } } }
   }
 }
