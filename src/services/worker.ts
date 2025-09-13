@@ -1,5 +1,6 @@
 import { withClient } from '../config/db.js';
 import { queuePasswordEmail, processEmailQueue } from './emailService.js';
+import { createNotification } from './notificationService.js';
 
 export async function processOutboxEvents() {
   await withClient(async c => {
@@ -18,18 +19,54 @@ export async function processOutboxEvents() {
           case 'user.created':
             if (payload.email && payload.senha) {
               await queuePasswordEmail(payload.email, payload.senha, 'register');
+              
+              // Criar notificação de boas-vindas
+              try {
+                await createNotification({
+                  usuario_id: payload.userId,
+                  titulo: '🎉 Bem-vindo ao NextLevel!',
+                  mensagem: `Olá ${payload.nome || 'usuário'}! Sua conta foi criada com sucesso.`,
+                  tipo: 'welcome',
+                  canal: 'app'
+                });
+              } catch (notifError) {
+                console.error('[notification-service][worker] Erro criando notificação de boas-vindas:', notifError);
+              }
             }
             break;
             
           case 'user.password_reset':
             if (payload.email && payload.senha) {
               await queuePasswordEmail(payload.email, payload.senha, 'reset');
+              
+              // Criar notificação de reset
+              try {
+                await createNotification({
+                  usuario_id: payload.userId,
+                  titulo: '🔑 Senha Redefinida',
+                  mensagem: 'Sua senha foi redefinida com sucesso. Verifique seu email.',
+                  tipo: 'password_reset',
+                  canal: 'app'
+                });
+              } catch (notifError) {
+                console.error('[notification-service][worker] Erro criando notificação de reset:', notifError);
+              }
             }
             break;
             
           case 'user.role_changed':
             console.log(`[notification-service][worker] Role alterada: ${payload.userId} -> ${payload.role}`);
-            // Implementar notificação de mudança de role se necessário
+            try {
+              await createNotification({
+                usuario_id: payload.userId,
+                titulo: '👤 Permissão Alterada',
+                mensagem: `Seu nível de acesso foi alterado para: ${payload.role}`,
+                tipo: 'role_change',
+                canal: 'app'
+              });
+            } catch (notifError) {
+              console.error('[notification-service][worker] Erro criando notificação de role:', notifError);
+            }
             break;
             
           case 'user.updated':
