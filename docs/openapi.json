@@ -1,6 +1,10 @@
 {
   "openapi": "3.0.3",
-  "info": { "title": "Notification Service API", "version": "1.0.0" },
+  "info": { 
+    "title": "Notification Service API", 
+    "version": "1.1.0",
+    "description": "Serviço de notificações e email. Consome eventos de RabbitMQ e gera emails/notificações persistidas.\n\nFilas / Exchanges:\n- Exchange auth.events (direct): auth.login, auth.logout, auth.password_reset\n- Exchange user.events (direct): user.created, user.password_reset, user.role_changed\n\nAções automáticas:\n- user.created -> email boas-vindas contendo senha provisória\n- user.password_reset -> email de redefinição\n\nOutros eventos são logados ou podem ser futuramente mapeados para push/in-app."
+  },
   "paths": {
     "/notifications/v1": { "get": { "summary": "Listar notificações do usuário", "tags": ["notifications"], "parameters": [{ "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Lista" }, "401": { "description": "Sem contexto" } } }, "post": { "summary": "Criar notificação", "tags": ["notifications"], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["usuario_id", "titulo", "mensagem"], "properties": { "usuario_id": { "type": "string", "format": "uuid" }, "titulo": { "type": "string" }, "mensagem": { "type": "string" }, "tipo": { "type": "string" }, "canal": { "type": "string" } } } } } }, "responses": { "201": { "description": "Criado" } } } }
   }
