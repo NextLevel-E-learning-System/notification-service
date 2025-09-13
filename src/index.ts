@@ -1,8 +1,5 @@
-import { config } from 'dotenv';
-config();
-import { createServer } from './server.js';
-const port = Number(process.env.PORT || 3333);
-createServer().listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`[notification-service] listening on ${port}`);
-});
+import dotenv from 'dotenv';
+dotenv.config();
+import './services/worker.js';
+
+console.log('[notification-service] Iniciado e processando fila/outbox...');
