@@ -4,7 +4,6 @@ import { processEmailQueue } from '../services/emailService.js';
 
 export const filaRouter = Router();
 
-// Listar fila de emails
 filaRouter.get('/', async (_req, res) => {
   const { rows } = await withClient(c =>
     c.query('SELECT * FROM notification_service.filas_email ORDER BY data_envio DESC LIMIT 50')
@@ -12,7 +11,6 @@ filaRouter.get('/', async (_req, res) => {
   res.json(rows);
 });
 
-// Reenviar email com erro
 filaRouter.post('/:id/retry', async (req, res) => {
   const id = req.params.id;
   await withClient(c => c.query(

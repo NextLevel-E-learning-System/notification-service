@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { 
   getUserNotifications, 
   markNotificationAsRead, 
@@ -9,25 +9,9 @@ import {
 
 export const notificationRouter = Router();
 
-interface AuthenticatedRequest extends Request {
-  userId?: string;
-  userRoles?: string[];
-}
-
-// Middleware para extrair userId dos headers (vem do gateway)
-const extractUserId = (req: AuthenticatedRequest, res: Response, next: () => void) => {
-  const userId = req.header('x-user-id');
-  if (!userId) {
-    return res.status(401).json({ error: 'user_id_required' });
-  }
-  req.userId = userId;
-  next();
-};
-
-// GET /notifications/v1/notificacoes - Buscar notificações do usuário
-notificationRouter.get('/notificacoes', extractUserId, async (req: AuthenticatedRequest, res) => {
+notificationRouter.get('/notificacoes', async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = req.header('x-user-id')!;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const onlyUnread = req.query.unread === 'true';
@@ -49,10 +33,9 @@ notificationRouter.get('/notificacoes', extractUserId, async (req: Authenticated
   }
 });
 
-// GET /notifications/v1/notificacoes/count - Contar notificações não lidas
-notificationRouter.get('/notificacoes/count', extractUserId, async (req: AuthenticatedRequest, res) => {
+notificationRouter.get('/notificacoes/count', async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = req.header('x-user-id')!;
     const count = await getUnreadNotificationCount(userId);
     
     res.json({ unreadCount: count });
@@ -62,10 +45,9 @@ notificationRouter.get('/notificacoes/count', extractUserId, async (req: Authent
   }
 });
 
-// PUT /notifications/v1/notificacoes/:id/read - Marcar notificação como lida
-notificationRouter.put('/notificacoes/:id/read', extractUserId, async (req: AuthenticatedRequest, res) => {
+notificationRouter.put('/notificacoes/:id/read', async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = req.header('x-user-id')!;
     const notificationId = parseInt(req.params.id);
     
     if (isNaN(notificationId)) {
@@ -85,10 +67,9 @@ notificationRouter.put('/notificacoes/:id/read', extractUserId, async (req: Auth
   }
 });
 
-// PUT /notifications/v1/notificacoes/read-all - Marcar todas como lidas
-notificationRouter.put('/notificacoes/read-all', extractUserId, async (req: AuthenticatedRequest, res) => {
+notificationRouter.put('/notificacoes/read-all', async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = req.header('x-user-id')!;
     const count = await markAllNotificationsAsRead(userId);
     
     res.json({ 
@@ -101,8 +82,7 @@ notificationRouter.put('/notificacoes/read-all', extractUserId, async (req: Auth
   }
 });
 
-// POST /notifications/v1/notificacoes - Criar notificação (admin only)
-notificationRouter.post('/notificacoes', extractUserId, async (req: AuthenticatedRequest, res) => {
+notificationRouter.post('/notificacoes', async (req: Request, res: Response) => {
   try {
     const { usuario_id, titulo, mensagem, tipo, canal } = req.body;
     
@@ -125,8 +105,7 @@ notificationRouter.post('/notificacoes', extractUserId, async (req: Authenticate
   }
 });
 
-// Rota legada para compatibilidade (pode ser removida depois)
-notificationRouter.get('/:usuarioId', async (req, res) => {
+notificationRouter.get('/:usuarioId', async (req: Request, res: Response) => {
   try {
     const usuarioId = req.params.usuarioId;
     const notifications = await getUserNotifications(usuarioId);

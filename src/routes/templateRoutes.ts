@@ -3,7 +3,6 @@ import { withClient } from '../config/db.js';
 
 export const templateRouter = Router();
 
-// Listar templates
 templateRouter.get('/', async (_req, res) => {
   const { rows } = await withClient(c =>
     c.query('SELECT * FROM notification_service.templates ORDER BY criado_em DESC')
@@ -11,7 +10,6 @@ templateRouter.get('/', async (_req, res) => {
   res.json(rows);
 });
 
-// Criar novo template
 templateRouter.post('/', async (req, res) => {
   const { codigo, titulo, corpo, variaveis } = req.body;
   await withClient(c =>
