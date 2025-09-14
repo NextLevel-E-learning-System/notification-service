@@ -1,7 +1,7 @@
 import { ConsumeMessage } from 'amqplib';
-import { connectRabbitMQ } from "../config/rabbitmq";
-import { queuePasswordEmail } from "../services/emailService";
-import { createNotification, getUserIdByAuthId } from "../services/notificationService";
+import { connectRabbitMQ } from "../config/rabbitmq.js";
+import { queuePasswordEmail } from "../services/emailService.js";
+import { createNotification, getUserIdByAuthId } from "../services/notificationService.js";
 
 const EXCHANGE_USER = process.env.EXCHANGE_USER || 'user.events';
 const EXCHANGE_AUTH = process.env.EXCHANGE_AUTH || 'auth.events';
