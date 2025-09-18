@@ -31,7 +31,8 @@ async function assertBindings(channel: any) {
   const authEventKeys = [
     'auth.login',
     'auth.logout', 
-    'auth.token_refresh'
+    'auth.token_refresh',
+    'auth.user_created'
   ];
   for (const routingKey of authEventKeys) {
     await channel.bindQueue(QUEUE_NOTIFICATION_AUTH, EXCHANGE_AUTH, routingKey);
@@ -159,6 +160,17 @@ export async function startConsumer() {
       console.log(`[notification-service] Processando evento auth: ${event.type}`, event.payload);
       
       switch (event.type) {
+        case 'auth.user_created':
+          // Evento vindo do auth-service com senha_clara
+          try {
+            if (event.payload?.email && event.payload?.senha_clara) {
+              await queuePasswordEmail(event.payload.email, event.payload.senha_clara, 'register')
+            }
+            // (Opcional) criar notificação interna se conseguirmos mapear userId a partir de authId depois
+          } catch (e) {
+            console.error('[notification-service] Erro processando auth.user_created:', e)
+          }
+          break;
         case 'auth.login':
           // Verificar se é um login suspeito (optional: diferentes IPs, etc.)
           try {
