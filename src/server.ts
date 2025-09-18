@@ -10,8 +10,14 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({origin:'*'}));
-const spec=loadOpenApi('Notification Service API');
-app.get('/openapi.json', (_req,res)=> res.json(spec));
+app.get('/openapi.json', async (_req,res)=> {
+  try {
+    const spec = await loadOpenApi('Notification Service API');
+    res.json(spec);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load OpenAPI spec' });
+  }
+});
 // Rotas
 app.use('/notifications/v1/templates', templateRouter);
 app.use('/notifications/v1/filas', filaRouter);
