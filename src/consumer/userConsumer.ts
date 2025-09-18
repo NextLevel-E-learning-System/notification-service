@@ -1,6 +1,6 @@
 import { ConsumeMessage } from 'amqplib';
 import { connectRabbitMQ } from "../config/rabbitmq.js";
-import { queuePasswordEmail } from "../services/emailService.js";
+import { sendRegistrationEmail, sendPasswordResetEmail } from "../services/emailService.js";
 import { createNotification, getUserIdByAuthId } from "../services/notificationService.js";
 
 const EXCHANGE_USER = process.env.EXCHANGE_USER || 'user.events';
@@ -32,7 +32,8 @@ async function assertBindings(channel: any) {
     'auth.login',
     'auth.logout', 
     'auth.token_refresh',
-    'auth.user_created'
+    'auth.user_created',
+    'auth.user_password_ephemeral'
   ];
   for (const routingKey of authEventKeys) {
     await channel.bindQueue(QUEUE_NOTIFICATION_AUTH, EXCHANGE_AUTH, routingKey);
@@ -53,12 +54,20 @@ export async function startConsumer() {
           
           switch (event.type) {
             case 'user.created':
-              // Enviar email de boas-vindas
-              await queuePasswordEmail(
-                event.payload.email, 
-                event.payload.senha, 
-                'register'
-              );
+              // Caso legado onde user-service ainda possa emitir user.created com senha (fase transição)
+              if (event.payload?.email && event.payload?.senha) {
+                try {
+                  await sendRegistrationEmail({
+                    nome: event.payload.nome || 'Usuário',
+                    email: event.payload.email,
+                    senha: event.payload.senha
+                  });
+                } catch (emailErr) {
+                  console.error('[notification-service] Falha ao enviar email de registro (user.created):', emailErr);
+                }
+              } else {
+                console.log('[notification-service] user.created sem senha - nenhum email de credenciais enviado');
+              }
               
               // Criar notificação de boas-vindas
               try {
@@ -75,12 +84,18 @@ export async function startConsumer() {
               break;
               
             case 'user.password_reset':
-              // Enviar email com nova senha
-              await queuePasswordEmail(
-                event.payload.email, 
-                event.payload.senha, 
-                'reset'
-              );
+              // Enviar email com nova senha diretamente
+              if (event.payload?.email && event.payload?.senha) {
+                try {
+                  await sendPasswordResetEmail({
+                    nome: event.payload.nome || 'Usuário',
+                    email: event.payload.email,
+                    novaSenha: event.payload.senha
+                  });
+                } catch (emailErr) {
+                  console.error('[notification-service] Falha ao enviar email de reset (user.password_reset):', emailErr);
+                }
+              }
               
               // Criar notificação de reset de senha
               try {
@@ -161,14 +176,22 @@ export async function startConsumer() {
       
       switch (event.type) {
         case 'auth.user_created':
-          // Evento vindo do auth-service com senha_clara
+          // Evento persistido sem senha: neste momento não enviamos email com credenciais.
+          // Opcional: enviar email de boas-vindas genérico ou acionar fluxo de criação de senha via link.
+          console.log('[notification-service] auth.user_created recebido (sem senha) - nenhum email enviado');
+          break;
+        case 'auth.user_password_ephemeral':
+          // Evento efêmero contendo a senha real (não armazenada em DB no auth-service)
           try {
-            if (event.payload?.email && event.payload?.senha_clara) {
-              await queuePasswordEmail(event.payload.email, event.payload.senha_clara, 'register')
+            if (event.payload?.email && event.payload?.senha) {
+              await sendRegistrationEmail({
+                nome: event.payload.nome || 'Usuário',
+                email: event.payload.email,
+                senha: event.payload.senha
+              });
             }
-            // (Opcional) criar notificação interna se conseguirmos mapear userId a partir de authId depois
           } catch (e) {
-            console.error('[notification-service] Erro processando auth.user_created:', e)
+            console.error('[notification-service] Erro processando auth.user_password_ephemeral:', e);
           }
           break;
         case 'auth.login':
