@@ -1,7 +1,7 @@
 import { ConsumeMessage } from 'amqplib';
 import { connectRabbitMQ } from "../config/rabbitmq.js";
 import { sendRegistrationEmail, sendPasswordResetEmail } from "../services/emailService.js";
-import { createNotification, getUserIdByAuthId } from "../services/notificationService.js";
+import { createNotification, getUserIdByAuthId, getAuthUserIdByFuncionarioId } from "../services/notificationService.js";
 
 const EXCHANGE_USER = process.env.EXCHANGE_USER || 'user.events';
 const EXCHANGE_AUTH = process.env.EXCHANGE_AUTH || 'auth.events';
@@ -71,13 +71,19 @@ export async function startConsumer() {
               
               // Criar notificação de boas-vindas
               try {
-                await createNotification({
-                  usuario_id: event.payload.userId,
-                  titulo: '🎉 Bem-vindo ao NextLevel!',
-                  mensagem: `Olá ${event.payload.nome || 'usuário'}! Sua conta foi criada com sucesso. Verifique seu email para acessar suas credenciais.`,
-                  tipo: 'welcome',
-                  canal: 'app'
-                });
+                // user.created vem do user-service: payload.userId é id do funcionario
+                const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
+                if (!authUserId) {
+                  console.warn('[notification-service] funcionario ainda não vinculado a auth_user_id para notificação welcome. Retry em próximo evento.');
+                } else {
+                  await createNotification({
+                    usuario_id: authUserId,
+                    titulo: '🎉 Bem-vindo ao NextLevel! (Perfil)',
+                    mensagem: `Olá ${event.payload.nome || 'usuário'}! Seu perfil foi criado/atualizado com sucesso.`,
+                    tipo: 'welcome',
+                    canal: 'app'
+                  });
+                }
               } catch (notifError) {
                 console.error('[notification-service] Erro criando notificação de boas-vindas:', notifError);
               }
@@ -99,13 +105,18 @@ export async function startConsumer() {
               
               // Criar notificação de reset de senha
               try {
-                await createNotification({
-                  usuario_id: event.payload.userId,
-                  titulo: '🔑 Senha Redefinida',
-                  mensagem: 'Sua senha foi redefinida com sucesso. Verifique seu email para obter a nova senha.',
-                  tipo: 'password_reset',
-                  canal: 'app'
-                });
+                const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
+                if (authUserId) {
+                  await createNotification({
+                    usuario_id: authUserId,
+                    titulo: '🔑 Senha Redefinida',
+                    mensagem: 'Sua senha foi redefinida com sucesso. Verifique seu email para obter a nova senha.',
+                    tipo: 'password_reset',
+                    canal: 'app'
+                  });
+                } else {
+                  console.warn('[notification-service] password_reset sem auth_user_id mapeado ainda (ignorado)');
+                }
               } catch (notifError) {
                 console.error('[notification-service] Erro criando notificação de reset:', notifError);
               }
@@ -114,14 +125,19 @@ export async function startConsumer() {
             case 'user.role_changed':
               // Criar notificação de mudança de role
               try {
-                await createNotification({
-                  usuario_id: event.payload.userId,
-                  titulo: '👤 Permissão Alterada',
-                  mensagem: `Seu nível de acesso foi alterado para: ${event.payload.role}`,
-                  tipo: 'role_change',
-                  canal: 'app'
-                });
-                console.log(`[notification-service] Notificação de role criada para usuário ${event.payload.userId}`);
+                const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
+                if (authUserId) {
+                  await createNotification({
+                    usuario_id: authUserId,
+                    titulo: '👤 Permissão Alterada',
+                    mensagem: `Seu nível de acesso foi alterado para: ${event.payload.role}`,
+                    tipo: 'role_change',
+                    canal: 'app'
+                  });
+                  console.log(`[notification-service] Notificação de role criada para usuário ${event.payload.userId}`);
+                } else {
+                  console.warn('[notification-service] role_changed sem auth_user_id mapeado (ignorado)');
+                }
               } catch (notifError) {
                 console.error('[notification-service] Erro criando notificação de role:', notifError);
               }
@@ -130,13 +146,16 @@ export async function startConsumer() {
             case 'user.updated':
               // Criar notificação de atualização de perfil
               try {
-                await createNotification({
-                  usuario_id: event.payload.userId,
-                  titulo: '✏️ Perfil Atualizado',
-                  mensagem: 'Suas informações de perfil foram atualizadas com sucesso.',
-                  tipo: 'profile_update',
-                  canal: 'app'
-                });
+                const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
+                if (authUserId) {
+                  await createNotification({
+                    usuario_id: authUserId,
+                    titulo: '✏️ Perfil Atualizado',
+                    mensagem: 'Suas informações de perfil foram atualizadas com sucesso.',
+                    tipo: 'profile_update',
+                    canal: 'app'
+                  });
+                }
               } catch (notifError) {
                 console.error('[notification-service] Erro criando notificação de update:', notifError);
               }
@@ -145,13 +164,16 @@ export async function startConsumer() {
             case 'user.deactivated':
               // Criar notificação de desativação (se o usuário ainda tem acesso)
               try {
-                await createNotification({
-                  usuario_id: event.payload.userId,
-                  titulo: '⚠️ Conta Desativada',
-                  mensagem: 'Sua conta foi desativada. Entre em contato com o administrador para mais informações.',
-                  tipo: 'account_deactivated',
-                  canal: 'app'
-                });
+                const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
+                if (authUserId) {
+                  await createNotification({
+                    usuario_id: authUserId,
+                    titulo: '⚠️ Conta Desativada',
+                    mensagem: 'Sua conta foi desativada. Entre em contato com o administrador para mais informações.',
+                    tipo: 'account_deactivated',
+                    canal: 'app'
+                  });
+                }
               } catch (notifError) {
                 console.error('[notification-service] Erro criando notificação de desativação:', notifError);
               }

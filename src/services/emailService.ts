@@ -14,17 +14,21 @@ function buildTransporter() {
         throw new Error('smtp_nao_configurado');
     }
     const enableDebug = process.env.SMTP_DEBUG === 'true';
-    transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-        tls: {
-            rejectUnauthorized: false
-        },
-        logger: enableDebug,
-        debug: enableDebug
-    });
+  const connectionTimeout = Number(process.env.SMTP_CONN_TIMEOUT_MS || 8000);
+  const socketTimeout = Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 10000);
+  transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+    connectionTimeout,
+    socketTimeout,
+    tls: {
+      rejectUnauthorized: process.env.SMTP_STRICT_TLS === 'true'
+    },
+    logger: enableDebug,
+    debug: enableDebug
+  });
     if (enableDebug) {
         console.log('[email][transporter_created]', { host, port, user });
     }
@@ -35,14 +39,15 @@ export async function sendMail(to: string, subject: string, text: string, html?:
     const from = 'no-reply@nextlevel.com';
     const t = buildTransporter();
     try {
-        const info = await t.sendMail({ from, to, subject, text, html: html || `<pre>${text}</pre>` });
+    const info = await t.sendMail({ from, to, subject, text, html: html || `<pre>${text}</pre>` });
         if (process.env.SMTP_DEBUG === 'true') {
             console.log('[email][sent]', { to, subject, messageId: info.messageId });
         }
         return info;
-    } catch (err: any) {
-        console.error('[email][send_fail]', { to, subject, err: err?.message });
-        throw err;
+  } catch (err) {
+    const e = err as Error & { code?: string; command?: string };
+    console.error('[email][send_fail]', { to, subject, err: e.message, code: e.code, command: e.command });
+    throw e;
     }
 }
 

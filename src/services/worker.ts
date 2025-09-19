@@ -12,7 +12,17 @@ export async function processOutboxEvents() {
 
     for (const event of userEvents) {
       try {
-        const payload = JSON.parse(event.payload);
+        // event.payload é jsonb no banco; driver já pode trazer objeto. Garantir parse seguro.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let payload: any = event.payload;
+        if (typeof event.payload === 'string') {
+          try {
+            payload = JSON.parse(event.payload);
+          } catch (e) {
+            console.error('[notification-service][worker] Falha parse payload user_event string', { id: event.id, topic: event.topic, sample: event.payload?.slice?.(0,200) });
+            throw e;
+          }
+        }
         console.log(`[notification-service][worker] Processando evento: ${event.topic}`, payload);
 
         switch (event.topic) {
@@ -96,7 +106,16 @@ export async function processOutboxEvents() {
 
       for (const event of authEvents) {
         try {
-          const payload = JSON.parse(event.payload);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let payload: any = event.payload;
+          if (typeof event.payload === 'string') {
+            try {
+              payload = JSON.parse(event.payload);
+            } catch (e) {
+              console.error('[notification-service][worker] Falha parse payload auth_event string', { id: event.id, event_type: event.event_type, sample: event.payload?.slice?.(0,200) });
+              throw e;
+            }
+          }
           console.log(`[notification-service][worker] Processando evento auth: ${event.event_type}`, payload);
 
           switch (event.event_type) {

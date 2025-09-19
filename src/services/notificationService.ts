@@ -137,3 +137,15 @@ export async function getUserIdByAuthId(authUserId: string): Promise<string | nu
     return rows.length > 0 ? rows[0].id : null;
   });
 }
+
+// Novo: obter auth_user_id a partir do id do funcionario (para criar notificações referenciando auth_service.usuarios)
+export async function getAuthUserIdByFuncionarioId(funcionarioId: string): Promise<string | null> {
+  return await withClient(async (client) => {
+    const { rows } = await client.query(
+      `SELECT auth_user_id FROM user_service.funcionarios WHERE id = $1 AND ativo = true`,
+      [funcionarioId]
+    );
+    if (rows.length === 0) return null;
+    return rows[0].auth_user_id;
+  });
+}
