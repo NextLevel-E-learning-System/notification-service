@@ -70,6 +70,7 @@ export async function sendMail(to: string, subject: string, text: string, html?:
 export async function sendRegistrationEmail(params: { nome: string; email: string; senha: string; }) {
     const html = buildPasswordTemplate({ tipo: 'register', senha: params.senha });
     const subject = '🎓 Acesso Criado - NextLevel';
+    const text = `Bem-vindo ao NextLevel! Sua senha temporária é: ${params.senha}`;
     
     console.log('[email][registration_attempt]', { 
         to: params.email, 
@@ -77,7 +78,7 @@ export async function sendRegistrationEmail(params: { nome: string; email: strin
     });
     
     try {
-        const result = await sendMail(params.email, subject, '', html);
+        const result = await sendMail(params.email, subject, text, html);
         console.log('[email][registration_sent]', { 
             to: params.email, 
             messageId: result.messageId,
@@ -93,9 +94,10 @@ export async function sendRegistrationEmail(params: { nome: string; email: strin
 export async function sendPasswordResetEmail(params: { nome: string; email: string; novaSenha: string; }) {
     const html = buildPasswordTemplate({ tipo: 'reset', senha: params.novaSenha });
     const subject = '🔐 Senha Redefinida - NextLevel';
+    const text = `Sua senha foi redefinida. Nova senha: ${params.novaSenha}`;
 
     try {
-        const result = await sendMail(params.email, subject, '', html);
+        const result = await sendMail(params.email, subject, text, html);
         console.log('[email][reset_sent]', { 
             to: params.email, 
             messageId: result.messageId,
@@ -123,7 +125,9 @@ export async function processEmailQueue() {
         
         for (const email of rows) {
             try {
-                const result = await sendMail(email.destinatario, email.assunto, '', email.corpo);
+                // Extrair texto simples do HTML para o SendGrid
+                const text = email.corpo.replace(/<[^>]*>/g, '').trim() || 'Email do NextLevel';
+                const result = await sendMail(email.destinatario, email.assunto, text, email.corpo);
                 await c.query(`UPDATE notification_service.filas_email SET status='ENVIADO' WHERE id=$1`, [email.id]);
                 console.log('[email][queue_processed]', { 
                     id: email.id, 
