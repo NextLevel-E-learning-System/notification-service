@@ -204,20 +204,20 @@ export async function startConsumer() {
           break;
         case 'auth.user_password_ephemeral':
           // Evento efêmero contendo a senha real (não armazenada em DB no auth-service)
-          try {
-            if (event.payload?.email && event.payload?.senha) {
+          if (event.payload?.email && event.payload?.senha) {
+            try {
               await sendRegistrationEmail({
                 nome: event.payload.nome || 'Usuário',
                 email: event.payload.email,
                 senha: event.payload.senha
               });
-              console.log('[notification-service] Email de registro enviado para:', event.payload.email);
-            } else {
-              console.warn('[notification-service] auth.user_password_ephemeral sem email ou senha válidos');
+              console.log('[notification-service] Email de registro enviado com sucesso para:', event.payload.email);
+            } catch (emailErr) {
+              // Log do erro mas não fazer throw - deixar que fique na fila para retry
+              console.error('[notification-service] Falha no envio imediato, email salvo na fila para retry:', (emailErr as Error).message);
             }
-          } catch (e) {
-            console.error('[notification-service] Erro processando auth.user_password_ephemeral:', e);
-            // Não fazer nack aqui - apenas log o erro para não perder a mensagem por timeout SMTP
+          } else {
+            console.warn('[notification-service] auth.user_password_ephemeral sem email ou senha válidos');
           }
           break;
         case 'auth.login':
