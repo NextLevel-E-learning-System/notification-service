@@ -1,14 +1,14 @@
-import dotenv from 'dotenv';
-dotenv.config();
-import app from './server.js';
+import { config } from 'dotenv';
+config();
+import { createServer } from './server.js';
 import { startConsumer } from './consumer/userConsumer.js';
 
 // Iniciar servidor web
-const PORT = process.env.PORT || 3333;
-app.listen(PORT, () => {
-  console.log(`[notification-service] Servidor rodando na porta ${PORT}`);
+const port = Number(process.env.PORT || 3333);
+createServer().listen(port, () => {
+  // eslint-disable-next-line no-console
+  console.log(`[auth-service] listening on ${port}`);
 });
-
 // Iniciar consumer RabbitMQ
 startConsumer().catch(console.error);
 
