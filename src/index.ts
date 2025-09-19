@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import app from './server.js';
-import './services/worker.js';
 import { startConsumer } from './consumer/userConsumer.js';
 
 // Iniciar servidor web
@@ -13,4 +12,4 @@ app.listen(PORT, () => {
 // Iniciar consumer RabbitMQ
 startConsumer().catch(console.error);
 
-console.log('[notification-service] Iniciado com servidor, worker (outbox) e consumer (RabbitMQ)...');
+console.log('[notification-service] Iniciado com servidor e consumer (RabbitMQ) - outbox removido.');

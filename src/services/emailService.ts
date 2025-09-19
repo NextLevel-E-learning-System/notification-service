@@ -14,21 +14,17 @@ function buildTransporter() {
         throw new Error('smtp_nao_configurado');
     }
     const enableDebug = process.env.SMTP_DEBUG === 'true';
-  const connectionTimeout = Number(process.env.SMTP_CONN_TIMEOUT_MS || 8000);
-  const socketTimeout = Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 10000);
-  transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-    connectionTimeout,
-    socketTimeout,
-    tls: {
-      rejectUnauthorized: process.env.SMTP_STRICT_TLS === 'true'
-    },
-    logger: enableDebug,
-    debug: enableDebug
-  });
+    transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+        tls: {
+            rejectUnauthorized: false
+        },
+        logger: enableDebug,
+        debug: enableDebug
+    });
     if (enableDebug) {
         console.log('[email][transporter_created]', { host, port, user });
     }
@@ -53,42 +49,41 @@ export async function sendMail(to: string, subject: string, text: string, html?:
 
 export async function sendRegistrationEmail(params: { nome: string; email: string; senha: string; }) {
     const html = buildPasswordTemplate({ tipo: 'register', senha: params.senha });
+      const subject = '🎓 Acesso Criado - NextLevel';
+      await withClient(async c => {
+    await c.query(
+      `INSERT INTO notification_service.filas_email (destinatario, assunto, corpo, status)
+       VALUES ($1,$2,$3,'PENDENTE')`,
+      [params.email, subject, html]
+    );
+  });
     // Texto em branco: senha só aparece no HTML conforme template fornecido
-    return sendMail(params.email, '🎓 Acesso Criado - NextLevel', '', html);
+    return sendMail(params.email, subject, '', html);
 }
 
 export async function sendPasswordResetEmail(params: { nome: string; email: string; novaSenha: string; }) {
     const html = buildPasswordTemplate({ tipo: 'reset', senha: params.novaSenha });
-    return sendMail(params.email, '🔐 Senha Redefinida - NextLevel', '', html);
-}
+      const subject ='🔐 Senha Redefinida - NextLevel';
 
-// Compat / fila: permite enfileirar emails em vez de enviar imediatamente
-export async function queuePasswordEmail(destinatario: string, senha: string, tipo: 'register' | 'reset') {
-  const html = buildPasswordTemplate({ tipo, senha });
-  const subject = tipo === 'register' ? '🎓 Acesso Criado - NextLevel' : '🔐 Senha Redefinida - NextLevel';
-  await withClient(async c => {
+     await withClient(async c => {
     await c.query(
       `INSERT INTO notification_service.filas_email (destinatario, assunto, corpo, status)
        VALUES ($1,$2,$3,'PENDENTE')`,
-      [destinatario, subject, html]
+      [params.email, subject, html]
     );
   });
+    return sendMail(params.email, subject, '', html);
 }
 
 export async function processEmailQueue() {
-  const t = buildTransporter();
   await withClient(async c => {
     const { rows } = await c.query(
       `SELECT * FROM notification_service.filas_email WHERE status='PENDENTE' ORDER BY data_envio LIMIT 10`
     );
     for (const email of rows) {
       try {
-        await t.sendMail({
-          from: process.env.SMTP_FROM || `"NextLevel" <${'no-reply@nextlevel.com'}>`,
-            to: email.destinatario,
-            subject: email.assunto,
-            html: email.corpo
-          });
+        await sendRegistrationEmail(email)
+        await sendRegistrationEmail(email)
           await c.query(`UPDATE notification_service.filas_email SET status='ENVIADO' WHERE id=$1`, [email.id]);
         } catch (err) {
           console.error('[email][queue_send_fail]', { id: email.id, err: (err as Error).message });
