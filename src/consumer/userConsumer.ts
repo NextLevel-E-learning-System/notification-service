@@ -211,9 +211,13 @@ export async function startConsumer() {
                 email: event.payload.email,
                 senha: event.payload.senha
               });
+              console.log('[notification-service] Email de registro enviado para:', event.payload.email);
+            } else {
+              console.warn('[notification-service] auth.user_password_ephemeral sem email ou senha válidos');
             }
           } catch (e) {
             console.error('[notification-service] Erro processando auth.user_password_ephemeral:', e);
+            // Não fazer nack aqui - apenas log o erro para não perder a mensagem por timeout SMTP
           }
           break;
         case 'auth.login':
