@@ -3,10 +3,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { logger } from './config/logger.js';
 import { loadOpenApi } from './config/openapi.js';
-import { templateRouter } from './routes/templateRoutes.js';
-import { filaRouter } from './routes/filaRoutes.js';
-import { notificationRouter } from './routes/notificationRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { filaRouter, notificationRouter, templateRouter } from './routes/routes.js';
 
 export function createServer() {
   const app = express();
