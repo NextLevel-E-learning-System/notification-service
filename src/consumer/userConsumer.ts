@@ -1,7 +1,7 @@
 import { ConsumeMessage } from 'amqplib';
 import { connectRabbitMQ } from "../config/rabbitmq.js";
 import { sendRegistrationEmail, sendPasswordResetEmail } from "../services/emailService.js";
-import { createNotification, getUserIdByAuthId, getAuthUserIdByFuncionarioId } from "../services/notificationService.js";
+import { createNotification, getAuthUserIdByFuncionarioId } from "../services/notificationService.js";
 import { createNotificationFromTemplate } from "../services/templateService.js";
 
 const EXCHANGE_USER = process.env.EXCHANGE_USER || 'user.events';
@@ -222,26 +222,6 @@ export async function startConsumer() {
             }
           } else {
             console.warn('[notification-service] auth.user_password_ephemeral sem email ou senha válidos');
-          }
-          break;
-        case 'auth.login':
-          // Verificar se é um login suspeito (optional: diferentes IPs, etc.)
-          try {
-            const userId = await getUserIdByAuthId(event.payload.userId);
-            if (userId) {
-              await createNotificationFromTemplate(
-                'login',
-                userId,
-                {
-                  data_hora: new Date(event.payload.timestamp || Date.now()).toLocaleString('pt-BR'),
-                  ip: event.payload.ip || 'IP não informado'
-                },
-                'login',
-                'app'
-              );
-            }
-          } catch (notifError) {
-            console.error('[notification-service] Erro criando notificação de login:', notifError);
           }
           break;
           
