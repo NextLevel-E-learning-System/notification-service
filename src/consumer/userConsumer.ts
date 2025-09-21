@@ -2,6 +2,7 @@ import { ConsumeMessage } from 'amqplib';
 import { connectRabbitMQ } from "../config/rabbitmq.js";
 import { sendRegistrationEmail, sendPasswordResetEmail } from "../services/emailService.js";
 import { createNotification, getUserIdByAuthId, getAuthUserIdByFuncionarioId } from "../services/notificationService.js";
+import { createNotificationFromTemplate } from "../services/templateService.js";
 
 const EXCHANGE_USER = process.env.EXCHANGE_USER || 'user.events';
 const EXCHANGE_AUTH = process.env.EXCHANGE_AUTH || 'auth.events';
@@ -69,20 +70,20 @@ export async function startConsumer() {
                 console.log('[notification-service] user.created sem senha - nenhum email de credenciais enviado');
               }
               
-              // Criar notificação de boas-vindas
+              // Criar notificação de boas-vindas usando template
               try {
                 // user.created vem do user-service: payload.userId é id do funcionario
                 const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
                 if (!authUserId) {
                   console.warn('[notification-service] funcionario ainda não vinculado a auth_user_id para notificação welcome. Retry em próximo evento.');
                 } else {
-                  await createNotification({
-                    usuario_id: authUserId,
-                    titulo: '🎉 Bem-vindo ao NextLevel! (Perfil)',
-                    mensagem: `Olá ${event.payload.nome || 'usuário'}! Seu perfil foi criado/atualizado com sucesso.`,
-                    tipo: 'welcome',
-                    canal: 'app'
-                  });
+                  await createNotificationFromTemplate(
+                    'welcome',
+                    authUserId,
+                    { nome: event.payload.nome || 'usuário' },
+                    'welcome',
+                    'app'
+                  );
                 }
               } catch (notifError) {
                 console.error('[notification-service] Erro criando notificação de boas-vindas:', notifError);
@@ -103,17 +104,17 @@ export async function startConsumer() {
                 }
               }
               
-              // Criar notificação de reset de senha
+              // Criar notificação de reset de senha usando template
               try {
                 const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
                 if (authUserId) {
-                  await createNotification({
-                    usuario_id: authUserId,
-                    titulo: '🔑 Senha Redefinida',
-                    mensagem: 'Sua senha foi redefinida com sucesso. Verifique seu email para obter a nova senha.',
-                    tipo: 'password_reset',
-                    canal: 'app'
-                  });
+                  await createNotificationFromTemplate(
+                    'password_reset',
+                    authUserId,
+                    {},
+                    'password_reset',
+                    'app'
+                  );
                 } else {
                   console.warn('[notification-service] password_reset sem auth_user_id mapeado ainda (ignorado)');
                 }
@@ -123,17 +124,20 @@ export async function startConsumer() {
               break;
               
             case 'user.role_changed':
-              // Criar notificação de mudança de role
+              // Criar notificação de mudança de role usando template
               try {
                 const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
                 if (authUserId) {
-                  await createNotification({
-                    usuario_id: authUserId,
-                    titulo: '👤 Permissão Alterada',
-                    mensagem: `Seu nível de acesso foi alterado para: ${event.payload.role}`,
-                    tipo: 'role_change',
-                    canal: 'app'
-                  });
+                  await createNotificationFromTemplate(
+                    'role_change',
+                    authUserId,
+                    { 
+                      nova_role: event.payload.role,
+                      permissoes: 'novas permissões'
+                    },
+                    'role_change',
+                    'app'
+                  );
                   console.log(`[notification-service] Notificação de role criada para usuário ${event.payload.userId}`);
                 } else {
                   console.warn('[notification-service] role_changed sem auth_user_id mapeado (ignorado)');
@@ -225,13 +229,16 @@ export async function startConsumer() {
           try {
             const userId = await getUserIdByAuthId(event.payload.userId);
             if (userId) {
-              await createNotification({
-                usuario_id: userId,
-                titulo: '🔐 Novo Acesso',
-                mensagem: `Novo login detectado em ${new Date(event.payload.timestamp).toLocaleString('pt-BR')}`,
-                tipo: 'login',
-                canal: 'app'
-              });
+              await createNotificationFromTemplate(
+                'login',
+                userId,
+                {
+                  data_hora: new Date(event.payload.timestamp || Date.now()).toLocaleString('pt-BR'),
+                  ip: event.payload.ip || 'IP não informado'
+                },
+                'login',
+                'app'
+              );
             }
           } catch (notifError) {
             console.error('[notification-service] Erro criando notificação de login:', notifError);

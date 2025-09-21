@@ -17,7 +17,10 @@ app.use(express.json());
     credentials: true
   }));
 app.use(cookieParser());
-app.use((req, _res, next) => { (req as any).log = logger; next(); });
+app.use((req, _res, next) => { 
+  (req as express.Request & { log: typeof logger }).log = logger; 
+  next(); 
+});
 
 app.get('/openapi.json', async (_req,res)=> {
   try {
@@ -28,9 +31,10 @@ app.get('/openapi.json', async (_req,res)=> {
   }
 });
 
-app.use('/notifications/v1/templates', templateRouter);
-app.use('/notifications/v1/filas', filaRouter);
-app.use('/notifications/v1', notificationRouter);
+// Estrutura de rotas reorganizada e mais clara
+app.use('/api/v1/notifications', notificationRouter);           // Notificações in-app
+app.use('/api/v1/notifications/templates', templateRouter);     // Templates para notificações in-app
+app.use('/api/v1/email/queue', filaRouter);                    // Fila de emails
 app.use(errorHandler);
   return app;
 }

@@ -3,21 +3,29 @@ export const openapiSpec = {
   "info": {
     "title": "Notification Service API",
     "version": "1.0.0",
-    "description": "Serviço de notificações com templates, filas e notificações."
+    "description": "Serviço de notificações in-app com templates inteligentes e fila de emails."
   },
   "paths": {
-    "/notifications/v1/templates": {
+    "/api/v1/notifications/templates": {
       "get": {
-        "summary": "Listar templates",
+        "summary": "Listar templates de notificação",
         "tags": ["templates"],
         "responses": {
           "200": {
-            "description": "Lista de templates"
+            "description": "Lista de templates disponíveis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/components/schemas/NotificationTemplate"}
+                }
+              }
+            }
           }
         }
       },
       "post": {
-        "summary": "Criar template",
+        "summary": "Criar/atualizar template de notificação",
         "tags": ["templates"],
         "requestBody": {
           "required": true,
@@ -25,11 +33,13 @@ export const openapiSpec = {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["nome", "assunto", "corpo"],
+                "required": ["codigo", "titulo", "corpo"],
                 "properties": {
-                  "nome": {"type": "string"},
-                  "assunto": {"type": "string"},
-                  "corpo": {"type": "string"}
+                  "codigo": {"type": "string", "description": "Código único do template"},
+                  "titulo": {"type": "string", "description": "Título da notificação"},
+                  "corpo": {"type": "string", "description": "Corpo da mensagem com variáveis {nome}"},
+                  "variaveis": {"type": "array", "items": {"type": "string"}, "description": "Lista de variáveis disponíveis"},
+                  "ativo": {"type": "boolean", "default": true}
                 }
               }
             }
@@ -37,26 +47,104 @@ export const openapiSpec = {
         },
         "responses": {
           "201": {
-            "description": "Template criado"
+            "description": "Template criado/atualizado",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/NotificationTemplate"}
+              }
+            }
           }
         }
       }
     },
-    "/notifications/v1/filas": {
+    "/api/v1/notifications/templates/{codigo}": {
       "get": {
-        "summary": "Listar fila de emails",
-        "tags": ["filas"],
+        "summary": "Buscar template por código",
+        "tags": ["templates"],
+        "parameters": [
+          {"name": "codigo", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
         "responses": {
           "200": {
-            "description": "Status da fila"
+            "description": "Template encontrado",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/NotificationTemplate"}
+              }
+            }
+          },
+          "404": {
+            "description": "Template não encontrado"
           }
         }
       }
     },
-    "/notifications/v1/filas/{id}/retry": {
+    "/api/v1/notifications/templates/{codigo}/send": {
+      "post": {
+        "summary": "Enviar notificação usando template",
+        "tags": ["templates"],
+        "parameters": [
+          {"name": "codigo", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["usuario_id"],
+                "properties": {
+                  "usuario_id": {"type": "string", "format": "uuid"},
+                  "variables": {"type": "object", "description": "Variáveis para substituir no template"},
+                  "tipo": {"type": "string"},
+                  "canal": {"type": "string", "default": "app"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notificação enviada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "integer"},
+                    "titulo": {"type": "string"},
+                    "mensagem": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/email/queue": {
+      "get": {
+        "summary": "Listar fila de emails",
+        "tags": ["email"],
+        "responses": {
+          "200": {
+            "description": "Status da fila de emails",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/components/schemas/EmailQueue"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/email/queue/{id}/retry": {
       "post": {
         "summary": "Retentar envio de email",
-        "tags": ["filas"],
+        "tags": ["email"],
         "parameters": [
           {"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}
         ],
@@ -67,10 +155,10 @@ export const openapiSpec = {
         }
       }
     },
-    "/notifications/v1/notificacoes": {
+    "/api/v1/notifications": {
       "get": {
         "summary": "Buscar notificações do usuário autenticado",
-        "tags": ["notificacoes"],
+        "tags": ["notifications"],
         "parameters": [
           {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}},
           {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 20}},
@@ -104,8 +192,8 @@ export const openapiSpec = {
         }
       },
       "post": {
-        "summary": "Criar nova notificação (admin only)",
-        "tags": ["notificacoes"],
+        "summary": "Criar nova notificação direta (admin only)",
+        "tags": ["notifications"],
         "requestBody": {
           "required": true,
           "content": {
@@ -136,10 +224,10 @@ export const openapiSpec = {
         }
       }
     },
-    "/notifications/v1/notificacoes/count": {
+    "/api/v1/notifications/count": {
       "get": {
         "summary": "Contar notificações não lidas",
-        "tags": ["notificacoes"],
+        "tags": ["notifications"],
         "responses": {
           "200": {
             "description": "Número de notificações não lidas",
@@ -157,10 +245,10 @@ export const openapiSpec = {
         }
       }
     },
-    "/notifications/v1/notificacoes/{id}/read": {
+    "/api/v1/notifications/{id}/read": {
       "put": {
         "summary": "Marcar notificação como lida",
-        "tags": ["notificacoes"],
+        "tags": ["notifications"],
         "parameters": [
           {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
         ],
@@ -174,10 +262,10 @@ export const openapiSpec = {
         }
       }
     },
-    "/notifications/v1/notificacoes/read-all": {
+    "/api/v1/notifications/read-all": {
       "put": {
         "summary": "Marcar todas notificações como lidas",
-        "tags": ["notificacoes"],
+        "tags": ["notifications"],
         "responses": {
           "200": {
             "description": "Todas notificações marcadas como lidas",
@@ -192,20 +280,6 @@ export const openapiSpec = {
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/notifications/v1/notificacoes/{usuarioId}": {
-      "get": {
-        "summary": "Listar notificações do usuário (rota legada)",
-        "tags": ["notificacoes"],
-        "parameters": [
-          {"name": "usuarioId", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista de notificações do usuário"
           }
         }
       }
@@ -224,6 +298,28 @@ export const openapiSpec = {
           "data_criacao": {"type": "string", "format": "date-time"},
           "lida": {"type": "boolean"},
           "canal": {"type": "string", "nullable": true}
+        }
+      },
+      "NotificationTemplate": {
+        "type": "object",
+        "properties": {
+          "codigo": {"type": "string"},
+          "titulo": {"type": "string"},
+          "corpo": {"type": "string"},
+          "variaveis": {"type": "array", "items": {"type": "string"}},
+          "ativo": {"type": "boolean"},
+          "criado_em": {"type": "string", "format": "date-time"}
+        }
+      },
+      "EmailQueue": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "destinatario": {"type": "string"},
+          "assunto": {"type": "string"},
+          "corpo": {"type": "string"},
+          "data_envio": {"type": "string", "format": "date-time"},
+          "status": {"type": "string", "enum": ["PENDENTE", "ENVIADO", "ERRO"]}
         }
       }
     }

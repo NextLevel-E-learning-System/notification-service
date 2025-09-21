@@ -9,9 +9,10 @@ import {
 
 export const notificationRouter = Router();
 
-notificationRouter.get('/notificacoes', async (req: Request, res: Response) => {
+// GET /api/v1/notifications - Buscar notificações do usuário autenticado
+notificationRouter.get('/', async (req: Request, res: Response) => {
   try {
-    const userId = req.header('x-user-id')!;
+    const userId = req.headers['x-user-data'] as string;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const onlyUnread = req.query.unread === 'true';
@@ -33,7 +34,8 @@ notificationRouter.get('/notificacoes', async (req: Request, res: Response) => {
   }
 });
 
-notificationRouter.get('/notificacoes/count', async (req: Request, res: Response) => {
+// GET /api/v1/notifications/count - Contar notificações não lidas
+notificationRouter.get('/count', async (req: Request, res: Response) => {
   try {
     const userId = req.header('x-user-id')!;
     const count = await getUnreadNotificationCount(userId);
@@ -45,7 +47,8 @@ notificationRouter.get('/notificacoes/count', async (req: Request, res: Response
   }
 });
 
-notificationRouter.put('/notificacoes/:id/read', async (req: Request, res: Response) => {
+// PUT /api/v1/notifications/:id/read - Marcar notificação como lida
+notificationRouter.put('/:id/read', async (req: Request, res: Response) => {
   try {
     const userId = req.header('x-user-id')!;
     const notificationId = parseInt(req.params.id);
@@ -67,7 +70,8 @@ notificationRouter.put('/notificacoes/:id/read', async (req: Request, res: Respo
   }
 });
 
-notificationRouter.put('/notificacoes/read-all', async (req: Request, res: Response) => {
+// PUT /api/v1/notifications/read-all - Marcar todas notificações como lidas
+notificationRouter.put('/read-all', async (req: Request, res: Response) => {
   try {
     const userId = req.header('x-user-id')!;
     const count = await markAllNotificationsAsRead(userId);
@@ -82,7 +86,8 @@ notificationRouter.put('/notificacoes/read-all', async (req: Request, res: Respo
   }
 });
 
-notificationRouter.post('/notificacoes', async (req: Request, res: Response) => {
+// POST /api/v1/notifications - Criar nova notificação (admin only)
+notificationRouter.post('/', async (req: Request, res: Response) => {
   try {
     const { usuario_id, titulo, mensagem, tipo, canal } = req.body;
     
@@ -101,17 +106,6 @@ notificationRouter.post('/notificacoes', async (req: Request, res: Response) => 
     res.status(201).json(notification);
   } catch (error) {
     console.error('[notification-service] Erro criando notificação:', error);
-    res.status(500).json({ error: 'internal_error' });
-  }
-});
-
-notificationRouter.get('/notificacoes/:usuarioId', async (req: Request, res: Response) => {
-  try {
-    const usuarioId = req.params.usuarioId;
-    const notifications = await getUserNotifications(usuarioId);
-    res.json(notifications);
-  } catch (error) {
-    console.error('[notification-service] Erro na rota legada:', error);
     res.status(500).json({ error: 'internal_error' });
   }
 });
