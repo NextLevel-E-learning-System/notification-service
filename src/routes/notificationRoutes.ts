@@ -105,7 +105,7 @@ notificationRouter.post('/notificacoes', async (req: Request, res: Response) => 
   }
 });
 
-notificationRouter.get('/:usuarioId', async (req: Request, res: Response) => {
+notificationRouter.get('/notificacoes/:usuarioId', async (req: Request, res: Response) => {
   try {
     const usuarioId = req.params.usuarioId;
     const notifications = await getUserNotifications(usuarioId);

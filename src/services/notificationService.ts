@@ -130,11 +130,11 @@ export async function cleanupOldNotifications(): Promise<number> {
 export async function getUserIdByAuthId(authUserId: string): Promise<string | null> {
   return await withClient(async (client) => {
     const { rows } = await client.query(`
-      SELECT id FROM user_service.funcionarios 
+      SELECT auth_user_id FROM user_service.funcionarios 
       WHERE auth_user_id = $1 AND ativo = true
     `, [authUserId]);
     
-    return rows.length > 0 ? rows[0].id : null;
+    return rows.length > 0 ? rows[0].auth_user_id : null;
   });
 }
 
