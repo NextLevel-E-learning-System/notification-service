@@ -108,26 +108,22 @@ export async function cleanupOldNotifications(): Promise<number> {
   });
 }
 
-// Função auxiliar para buscar user_id pelo auth_user_id
-export async function getUserIdByAuthId(authUserId: string): Promise<string | null> {
+// Função auxiliar para verificar se funcionário existe
+export async function getFuncionarioById(funcionarioId: string): Promise<string | null> {
   return await withClient(async (client) => {
     const { rows } = await client.query(`
-      SELECT auth_user_id FROM user_service.funcionarios 
-      WHERE auth_user_id = $1 AND ativo = true
-    `, [authUserId]);
+      SELECT id FROM user_service.funcionarios 
+      WHERE id = $1 AND ativo = true
+    `, [funcionarioId]);
     
-    return rows.length > 0 ? rows[0].auth_user_id : null;
+    return rows.length > 0 ? rows[0].id : null;
   });
 }
 
-// Novo: obter auth_user_id a partir do id do funcionario (para criar notificações referenciando auth_service.usuarios)
+// Esta função não é mais necessária pois agora usamos diretamente o funcionario_id
 export async function getAuthUserIdByFuncionarioId(funcionarioId: string): Promise<string | null> {
-  return await withClient(async (client) => {
-    const { rows } = await client.query(
-      `SELECT auth_user_id FROM user_service.funcionarios WHERE id = $1 AND ativo = true`,
-      [funcionarioId]
-    );
-    if (rows.length === 0) return null;
-    return rows[0].auth_user_id;
-  });
+  // Na nova estrutura, funcionario_id é usado diretamente
+  // Vamos apenas verificar se o funcionário existe
+  const funcionario = await getFuncionarioById(funcionarioId);
+  return funcionario; // retorna o próprio funcionario_id se existir
 }
