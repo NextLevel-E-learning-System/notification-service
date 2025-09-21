@@ -153,7 +153,7 @@ export async function startConsumer() {
                 const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
                 if (authUserId) {
                   await createNotification({
-                    usuario_id: authUserId,
+                    funcionario_id: authUserId,
                     titulo: '✏️ Perfil Atualizado',
                     mensagem: 'Suas informações de perfil foram atualizadas com sucesso.',
                     tipo: 'profile_update',
@@ -171,7 +171,7 @@ export async function startConsumer() {
                 const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
                 if (authUserId) {
                   await createNotification({
-                    usuario_id: authUserId,
+                    funcionario_id: authUserId,
                     titulo: '⚠️ Conta Desativada',
                     mensagem: 'Sua conta foi desativada. Entre em contato com o administrador para mais informações.',
                     tipo: 'account_deactivated',

@@ -72,15 +72,15 @@ export class TemplateController {
   static async sendNotificationFromTemplate(req: Request, res: Response) {
     try {
       const { codigo } = req.params;
-      const { usuario_id, variables, tipo, canal } = req.body;
+      const { funcionario_id, variables, tipo, canal } = req.body;
       
-      if (!usuario_id) {
-        return res.status(400).json({ error: 'usuario_id_required' });
+      if (!funcionario_id) {
+        return res.status(400).json({ error: 'funcionario_id_required' });
       }
 
       const notification = await createNotificationFromTemplate(
         codigo,
-        usuario_id,
+        funcionario_id,
         variables as TemplateVariables || {},
         tipo,
         canal

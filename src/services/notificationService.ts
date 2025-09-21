@@ -8,12 +8,12 @@ export async function createNotification(data: CreateNotificationData): Promise<
   return await withClient(async (client) => {
     const { rows } = await client.query(`
       INSERT INTO notification_service.notificacoes 
-      (usuario_id, titulo, mensagem, tipo, canal)
+      (funcionario_id, titulo, mensagem, tipo, canal)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
-    `, [data.usuario_id, data.titulo, data.mensagem, data.tipo || null, data.canal || 'app']);
+    `, [data.funcionario_id, data.titulo, data.mensagem, data.tipo || null, data.canal || 'app']);
     
-    console.log(`[notification-service] Notificação criada para usuário ${data.usuario_id}: ${data.titulo}`);
+    console.log(`[notification-service] Notificação criada para usuário ${data.funcionario_id}: ${data.titulo}`);
     return rows[0];
   });
 }
@@ -29,8 +29,8 @@ export async function getUserNotifications(
 ): Promise<Notification[]> {
   return await withClient(async (client) => {
     const whereClause = onlyUnread 
-      ? 'WHERE usuario_id = $1 AND lida = false'
-      : 'WHERE usuario_id = $1';
+      ? 'WHERE funcionario_id = $1 AND lida = false'
+      : 'WHERE funcionario_id = $1';
     
     const { rows } = await client.query(`
       SELECT * FROM notification_service.notificacoes 
@@ -51,7 +51,7 @@ export async function markNotificationAsRead(notificationId: number, userId: str
     const { rowCount } = await client.query(`
       UPDATE notification_service.notificacoes 
       SET lida = true 
-      WHERE id = $1 AND usuario_id = $2
+      WHERE id = $1 AND funcionario_id = $2
     `, [notificationId, userId]);
     
     return (rowCount || 0) > 0;
@@ -66,7 +66,7 @@ export async function markAllNotificationsAsRead(userId: string): Promise<number
     const { rowCount } = await client.query(`
       UPDATE notification_service.notificacoes 
       SET lida = true 
-      WHERE usuario_id = $1 AND lida = false
+      WHERE funcionario_id = $1 AND lida = false
     `, [userId]);
     
     const count = rowCount || 0;
@@ -83,7 +83,7 @@ export async function getUnreadNotificationCount(userId: string): Promise<number
     const { rows } = await client.query(`
       SELECT COUNT(*) as count 
       FROM notification_service.notificacoes 
-      WHERE usuario_id = $1 AND lida = false
+      WHERE funcionario_id = $1 AND lida = false
     `, [userId]);
     
     return parseInt(rows[0].count);

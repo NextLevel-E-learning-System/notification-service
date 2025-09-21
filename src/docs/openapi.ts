@@ -92,9 +92,9 @@ export const openapiSpec = {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["usuario_id"],
+                "required": ["funcionario_id"],
                 "properties": {
-                  "usuario_id": {"type": "string", "format": "uuid"},
+                  "funcionario_id": {"type": "string", "format": "uuid"},
                   "variables": {"type": "object", "description": "Variáveis para substituir no template"},
                   "tipo": {"type": "string"},
                   "canal": {"type": "string", "default": "app"}
@@ -200,9 +200,9 @@ export const openapiSpec = {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["usuario_id", "titulo", "mensagem"],
+                "required": ["funcionario_id", "titulo", "mensagem"],
                 "properties": {
-                  "usuario_id": {"type": "string", "format": "uuid"},
+                  "funcionario_id": {"type": "string", "format": "uuid"},
                   "titulo": {"type": "string"},
                   "mensagem": {"type": "string"},
                   "tipo": {"type": "string"},
@@ -291,7 +291,7 @@ export const openapiSpec = {
         "type": "object",
         "properties": {
           "id": {"type": "integer"},
-          "usuario_id": {"type": "string", "format": "uuid"},
+          "funcionario_id": {"type": "string", "format": "uuid"},
           "titulo": {"type": "string"},
           "mensagem": {"type": "string"},
           "tipo": {"type": "string", "nullable": true},

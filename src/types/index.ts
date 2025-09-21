@@ -1,6 +1,6 @@
 // Tipos para Notificações
 export interface CreateNotificationData {
-  usuario_id: string;
+  funcionario_id: string;
   titulo: string;
   mensagem: string;
   tipo?: string;
@@ -9,7 +9,7 @@ export interface CreateNotificationData {
 
 export interface Notification {
   id: number;
-  usuario_id: string;
+  funcionario_id: string;
   titulo: string;
   mensagem: string;
   tipo: string | null;

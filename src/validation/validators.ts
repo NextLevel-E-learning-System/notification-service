@@ -89,7 +89,7 @@ export const templateValidation = [
 ];
 
 export const templateSendValidation = [
-  { field: 'usuario_id', required: true, type: 'string' as const, pattern: validationPatterns.uuid },
+  { field: 'funcionario_id', required: true, type: 'string' as const, pattern: validationPatterns.uuid },
   { field: 'variables', required: false, type: 'object' as const },
   { field: 'tipo', required: false, type: 'string' as const, maxLength: 50 },
   { field: 'canal', required: false, type: 'string' as const, maxLength: 20 }

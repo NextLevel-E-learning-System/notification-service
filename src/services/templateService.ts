@@ -89,7 +89,7 @@ export async function createNotificationFromTemplate(
   const { createNotification } = await import('./notificationService.js');
   
   const notification = await createNotification({
-    usuario_id: userId,
+    funcionario_id: userId,
     titulo,
     mensagem,
     tipo,
