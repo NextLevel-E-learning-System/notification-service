@@ -30,9 +30,9 @@ app.get('/openapi.json', async (_req,res)=> {
 });
 
 // Estrutura de rotas reorganizada e mais clara
-app.use('/api/v1/notifications', notificationRouter);           // Notificações in-app
-app.use('/api/v1/notifications/templates', templateRouter);     // Templates para notificações in-app
-app.use('/api/v1/email/queue', filaRouter);                    // Fila de emails
+app.use('/notifications/v1', notificationRouter);           // Notificações in-app
+app.use('/notifications/v1/templates', templateRouter);     // Templates para notificações in-app
+app.use('/notifications/v1/email', filaRouter);                    // Fila de emails
 app.use(errorHandler);
   return app;
 }

@@ -4,7 +4,6 @@ import { processEmailQueue } from '../services/emailService.js';
 
 export class EmailController {
   /**
-   * GET /api/v1/email/queue
    * Listar fila de emails
    */
   static async getEmailQueue(req: Request, res: Response) {
@@ -20,7 +19,6 @@ export class EmailController {
   }
 
   /**
-   * POST /api/v1/email/queue/:id/retry
    * Retentar envio de email
    */
   static async retryEmail(req: Request, res: Response) {
@@ -41,7 +39,6 @@ export class EmailController {
   }
 
   /**
-   * POST /api/v1/email/queue/process
    * Processar fila de emails manualmente
    */
   static async processQueue(req: Request, res: Response) {
@@ -58,7 +55,6 @@ export class EmailController {
   }
 
   /**
-   * GET /api/v1/email/queue/stats
    * Estatísticas da fila de emails
    */
   static async getQueueStats(req: Request, res: Response) {

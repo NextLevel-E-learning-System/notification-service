@@ -6,7 +6,7 @@ export const openapiSpec = {
     "description": "Serviço de notificações in-app com templates inteligentes e fila de emails."
   },
   "paths": {
-    "/api/v1/notifications/templates": {
+    "/notifications/v1/templates": {
       "get": {
         "summary": "Listar templates de notificação",
         "tags": ["templates"],
@@ -57,7 +57,7 @@ export const openapiSpec = {
         }
       }
     },
-    "/api/v1/notifications/templates/{codigo}": {
+    "/notifications/v1/templates/{codigo}": {
       "get": {
         "summary": "Buscar template por código",
         "tags": ["templates"],
@@ -79,7 +79,7 @@ export const openapiSpec = {
         }
       }
     },
-    "/api/v1/notifications/templates/{codigo}/send": {
+    "/notifications/v1/templates/{codigo}/send": {
       "post": {
         "summary": "Enviar notificação usando template",
         "tags": ["templates"],
@@ -122,7 +122,7 @@ export const openapiSpec = {
         }
       }
     },
-    "/api/v1/email/queue": {
+    "/notifications/v1/email": {
       "get": {
         "summary": "Listar fila de emails",
         "tags": ["email"],
@@ -141,7 +141,7 @@ export const openapiSpec = {
         }
       }
     },
-    "/api/v1/email/queue/{id}/retry": {
+    "/notifications/v1/email/{id}/retry": {
       "post": {
         "summary": "Retentar envio de email",
         "tags": ["email"],
@@ -155,7 +155,7 @@ export const openapiSpec = {
         }
       }
     },
-    "/api/v1/notifications": {
+    "/notifications/v1": {
       "get": {
         "summary": "Buscar notificações do usuário autenticado",
         "tags": ["notifications"],
@@ -224,7 +224,7 @@ export const openapiSpec = {
         }
       }
     },
-    "/api/v1/notifications/count": {
+    "/notifications/v1/count": {
       "get": {
         "summary": "Contar notificações não lidas",
         "tags": ["notifications"],
@@ -245,7 +245,7 @@ export const openapiSpec = {
         }
       }
     },
-    "/api/v1/notifications/{id}/read": {
+    "/notifications/v1/{id}/read": {
       "put": {
         "summary": "Marcar notificação como lida",
         "tags": ["notifications"],
@@ -262,7 +262,7 @@ export const openapiSpec = {
         }
       }
     },
-    "/api/v1/notifications/read-all": {
+    "/notifications/v1/read-all": {
       "put": {
         "summary": "Marcar todas notificações como lidas",
         "tags": ["notifications"],

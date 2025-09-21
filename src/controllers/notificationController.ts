@@ -33,7 +33,6 @@ export const getNotifications = async (req: Request, res: Response) => {
   }
 
   /**
-   * GET /api/v1/notifications/count
    * Contar notificações não lidas
    */
 export const getUnreadCount = async (req: Request, res: Response) => {
@@ -49,7 +48,6 @@ export const getUnreadCount = async (req: Request, res: Response) => {
   }
 
   /**
-   * PUT /api/v1/notifications/:id/read
    * Marcar notificação como lida
    */  
 export const markAsRead = async (req: Request, res: Response) => {
@@ -75,7 +73,6 @@ export const markAsRead = async (req: Request, res: Response) => {
   }
 
   /**
-   * PUT /api/v1/notifications/read-all
    * Marcar todas notificações como lidas
    */
 export const markAllAsRead = async (req: Request, res: Response) => {

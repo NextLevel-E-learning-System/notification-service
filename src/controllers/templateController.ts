@@ -9,7 +9,6 @@ import type { TemplateVariables } from '../types/index.js';
 
 export class TemplateController {
   /**
-   * GET /api/v1/notifications/templates
    * Listar todos os templates
    */
   static async listTemplates(req: Request, res: Response) {
@@ -23,7 +22,6 @@ export class TemplateController {
   }
 
   /**
-   * GET /api/v1/notifications/templates/:codigo
    * Buscar template específico
    */
   static async getTemplate(req: Request, res: Response) {
@@ -40,7 +38,6 @@ export class TemplateController {
   }
 
   /**
-   * POST /api/v1/notifications/templates
    * Criar/atualizar template
    */
   static async createTemplate(req: Request, res: Response) {
@@ -70,7 +67,6 @@ export class TemplateController {
   }
 
   /**
-   * POST /api/v1/notifications/templates/:codigo/send
    * Enviar notificação usando template
    */
   static async sendNotificationFromTemplate(req: Request, res: Response) {
