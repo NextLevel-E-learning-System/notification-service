@@ -4,16 +4,11 @@ import {
   markNotificationAsRead, 
   markAllNotificationsAsRead, 
   getUnreadNotificationCount,
-  createNotification 
 } from '../services/notificationService.js';
-import type { NotificationsPaginated } from '../types/index.js';
 
-export class NotificationController {
-  /**
-   * GET /api/v1/notifications
-   * Buscar notificações do usuário autenticado
-   */
-  static async getNotifications(req: Request, res: Response) {
+
+export const getNotifications = async (req: Request, res: Response) => {
+
     try {
       const userId = req.headers['x-user-data'] as string;
       const page = parseInt(req.query.page as string) || 1;
@@ -41,9 +36,9 @@ export class NotificationController {
    * GET /api/v1/notifications/count
    * Contar notificações não lidas
    */
-  static async getUnreadCount(req: Request, res: Response) {
+export const getUnreadCount = async (req: Request, res: Response) => {
     try {
-      const userId = req.header('x-user-id')!;
+      const userId = req.header('x-user-data')!;
       const count = await getUnreadNotificationCount(userId);
       
       res.json({ unreadCount: count });
@@ -56,8 +51,8 @@ export class NotificationController {
   /**
    * PUT /api/v1/notifications/:id/read
    * Marcar notificação como lida
-   */
-  static async markAsRead(req: Request, res: Response) {
+   */  
+export const markAsRead = async (req: Request, res: Response) => {
     try {
       const userId = req.header('x-user-id')!;
       const notificationId = parseInt(req.params.id);
@@ -83,7 +78,7 @@ export class NotificationController {
    * PUT /api/v1/notifications/read-all
    * Marcar todas notificações como lidas
    */
-  static async markAllAsRead(req: Request, res: Response) {
+export const markAllAsRead = async (req: Request, res: Response) => {
     try {
       const userId = req.header('x-user-id')!;
       const count = await markAllNotificationsAsRead(userId);
@@ -97,31 +92,3 @@ export class NotificationController {
       res.status(500).json({ error: 'internal_error' });
     }
   }
-
-  /**
-   * POST /api/v1/notifications
-   * Criar nova notificação (admin only)
-   */
-  static async createNotification(req: Request, res: Response) {
-    try {
-      const { usuario_id, titulo, mensagem, tipo, canal } = req.body;
-      
-      if (!usuario_id || !titulo || !mensagem) {
-        return res.status(400).json({ error: 'required_fields_missing' });
-      }
-
-      const notification = await createNotification({
-        usuario_id,
-        titulo,
-        mensagem,
-        tipo,
-        canal
-      });
-      
-      res.status(201).json(notification);
-    } catch (error) {
-      console.error('[notification-controller] Erro criando notificação:', error);
-      res.status(500).json({ error: 'internal_error' });
-    }
-  }
-}

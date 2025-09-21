@@ -80,15 +80,6 @@ export const validationPatterns = {
   templateCode: /^[a-zA-Z0-9_-]+$/
 };
 
-// Predefined validation rules
-export const notificationValidation = [
-  { field: 'usuario_id', required: true, type: 'string' as const, pattern: validationPatterns.uuid },
-  { field: 'titulo', required: true, type: 'string' as const, minLength: 1, maxLength: 200 },
-  { field: 'mensagem', required: true, type: 'string' as const, minLength: 1, maxLength: 1000 },
-  { field: 'tipo', required: false, type: 'string' as const, maxLength: 50 },
-  { field: 'canal', required: false, type: 'string' as const, maxLength: 20 }
-];
-
 export const templateValidation = [
   { field: 'codigo', required: true, type: 'string' as const, minLength: 1, maxLength: 50, pattern: validationPatterns.templateCode },
   { field: 'titulo', required: true, type: 'string' as const, minLength: 1, maxLength: 200 },

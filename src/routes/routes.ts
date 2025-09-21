@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { EmailController } from '../controllers/emailController.js';
-import { NotificationController } from '../controllers/notificationController.js';
-import { notificationValidation, templateSendValidation, templateValidation, validateBody } from '../validation/validators.js';
+import * as NotificationController from '../controllers/notificationController.js';
+import { templateSendValidation, templateValidation, validateBody } from '../validation/validators.js';
 import { TemplateController } from '../controllers/templateController.js';
 
 export const filaRouter = Router();
@@ -23,8 +23,6 @@ notificationRouter.get('/count', NotificationController.getUnreadCount);
 notificationRouter.put('/:id/read', NotificationController.markAsRead);
 // PUT /api/v1/notifications/read-all - Marcar todas notificações como lidas
 notificationRouter.put('/read-all', NotificationController.markAllAsRead);
-// POST /api/v1/notifications - Criar nova notificação (admin only)
-notificationRouter.post('/', validateBody(notificationValidation), NotificationController.createNotification);
 
 export const templateRouter = Router();
 templateRouter.get('/', TemplateController.listTemplates);
