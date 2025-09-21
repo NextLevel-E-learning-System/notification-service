@@ -10,7 +10,7 @@ import {
 export const getNotifications = async (req: Request, res: Response) => {
 
     try {
-      const userId = req.headers['x-user-data'] as string;
+      const userId = req.header('x-user-id')!;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
       const onlyUnread = req.query.unread === 'true';
@@ -38,7 +38,7 @@ export const getNotifications = async (req: Request, res: Response) => {
    */
 export const getUnreadCount = async (req: Request, res: Response) => {
     try {
-      const userId = req.header('x-user-data')!;
+      const userId = req.header('x-user-id')!;
       const count = await getUnreadNotificationCount(userId);
       
       res.json({ unreadCount: count });
