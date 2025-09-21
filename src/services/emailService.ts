@@ -1,5 +1,6 @@
 import { withClient } from '../config/db.js';
 import { buildPasswordTemplate } from '../templates/passwordTemplate.js';
+import type { EmailRegistrationParams, EmailPasswordResetParams, EmailSendResult } from '../types/index.js';
 
 // Configuração SendGrid
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
@@ -67,7 +68,7 @@ export async function sendMail(to: string, subject: string, text: string, html?:
     }
 }
 
-export async function sendRegistrationEmail(params: { nome: string; email: string; senha: string; }) {
+export async function sendRegistrationEmail(params: EmailRegistrationParams): Promise<EmailSendResult> {
     const html = buildPasswordTemplate({ tipo: 'register', senha: params.senha });
     const subject = '🎓 Acesso Criado - NextLevel';
     const text = `Bem-vindo ao NextLevel! Sua senha temporária é: ${params.senha}`;
@@ -91,7 +92,7 @@ export async function sendRegistrationEmail(params: { nome: string; email: strin
     }
 }
 
-export async function sendPasswordResetEmail(params: { nome: string; email: string; novaSenha: string; }) {
+export async function sendPasswordResetEmail(params: EmailPasswordResetParams): Promise<EmailSendResult> {
     const html = buildPasswordTemplate({ tipo: 'reset', senha: params.novaSenha });
     const subject = '🔐 Senha Redefinida - NextLevel';
     const text = `Sua senha foi redefinida. Nova senha: ${params.novaSenha}`;

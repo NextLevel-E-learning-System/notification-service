@@ -1,23 +1,5 @@
 import { withClient } from '../config/db.js';
-
-export interface CreateNotificationData {
-  usuario_id: string;
-  titulo: string;
-  mensagem: string;
-  tipo?: string;
-  canal?: string;
-}
-
-export interface Notification {
-  id: number;
-  usuario_id: string;
-  titulo: string;
-  mensagem: string;
-  tipo: string | null;
-  data_criacao: string;
-  lida: boolean;
-  canal: string | null;
-}
+import type { CreateNotificationData, Notification } from '../types/index.js';
 
 /**
  * Cria uma nova notificação in-app para o usuário

@@ -1,17 +1,5 @@
 import { withClient } from '../config/db.js';
-
-export interface NotificationTemplate {
-  codigo: string;
-  titulo: string;
-  corpo: string;
-  variaveis: string[];
-  ativo: boolean;
-  criado_em: string;
-}
-
-export interface TemplateVariables {
-  [key: string]: string | number;
-}
+import type { NotificationTemplate, TemplateVariables } from '../types/index.js';
 
 /**
  * Busca template por código

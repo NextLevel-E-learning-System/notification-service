@@ -1,22 +1,16 @@
 import { Router } from 'express';
-import { withClient } from '../config/db.js';
-import { processEmailQueue } from '../services/emailService.js';
+import { EmailController } from '../controllers/emailController.js';
 
 export const filaRouter = Router();
 
-filaRouter.get('/', async (_req, res) => {
-  const { rows } = await withClient(c =>
-    c.query('SELECT * FROM notification_service.filas_email ORDER BY data_envio DESC LIMIT 50')
-  );
-  res.json(rows);
-});
+// GET /api/v1/email/queue - Listar fila de emails
+filaRouter.get('/', EmailController.getEmailQueue);
 
-filaRouter.post('/:id/retry', async (req, res) => {
-  const id = req.params.id;
-  await withClient(c => c.query(
-    `UPDATE notification_service.filas_email SET status='PENDENTE' WHERE id=$1 AND status='ERRO'`,
-    [id]
-  ));
-  await processEmailQueue();
-  res.json({ ok: true });
-});
+// POST /api/v1/email/queue/:id/retry - Retentar envio de email
+filaRouter.post('/:id/retry', EmailController.retryEmail);
+
+// POST /api/v1/email/queue/process - Processar fila manualmente
+filaRouter.post('/process', EmailController.processQueue);
+
+// GET /api/v1/email/queue/stats - Estatísticas da fila
+filaRouter.get('/stats', EmailController.getQueueStats);
