@@ -5,11 +5,25 @@ export const openapiSpec = {
     "version": "1.0.0",
     "description": "Serviço de notificações in-app com templates inteligentes e fila de emails."
   },
+  "tags": [
+    {
+      "name": "Notification - Templates",
+      "description": "Gestão de Templates - Templates de notificações"
+    },
+    {
+      "name": "Notification - Notificações",
+      "description": "Gestão de Notificações - Envio e consulta de notificações"
+    },
+    {
+      "name": "Notification - Emails",
+      "description": "Gestão de Emails - Fila e envio de emails"
+    }
+  ],
   "paths": {
     "/notifications/v1/templates": {
       "get": {
         "summary": "Listar templates de notificação",
-        "tags": ["templates"],
+        "tags": ["Notification - Templates"],
         "responses": {
           "200": {
             "description": "Lista de templates disponíveis",
@@ -26,7 +40,7 @@ export const openapiSpec = {
       },
       "post": {
         "summary": "Criar/atualizar template de notificação",
-        "tags": ["templates"],
+        "tags": ["Notification - Templates"],
         "requestBody": {
           "required": true,
           "content": {
@@ -60,7 +74,7 @@ export const openapiSpec = {
     "/notifications/v1/templates/{codigo}": {
       "get": {
         "summary": "Buscar template por código",
-        "tags": ["templates"],
+        "tags": ["Notification - Templates"],
         "parameters": [
           {"name": "codigo", "in": "path", "required": true, "schema": {"type": "string"}}
         ],
@@ -82,7 +96,7 @@ export const openapiSpec = {
     "/notifications/v1/templates/{codigo}/send": {
       "post": {
         "summary": "Enviar notificação usando template",
-        "tags": ["templates"],
+        "tags": ["Notification - Templates"],
         "parameters": [
           {"name": "codigo", "in": "path", "required": true, "schema": {"type": "string"}}
         ],
@@ -158,7 +172,7 @@ export const openapiSpec = {
     "/notifications/v1": {
       "get": {
         "summary": "Buscar notificações do usuário autenticado",
-        "tags": ["notifications"],
+        "tags": ["Notification - Notificações"],
         "parameters": [
           {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}},
           {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 20}},
@@ -172,7 +186,7 @@ export const openapiSpec = {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "notifications": {
+                    "Notification - Notificações": {
                       "type": "array",
                       "items": {"$ref": "#/components/schemas/Notification"}
                     },
@@ -193,7 +207,7 @@ export const openapiSpec = {
       },
       "post": {
         "summary": "Criar nova notificação direta (admin only)",
-        "tags": ["notifications"],
+        "tags": ["Notification - Notificações"],
         "requestBody": {
           "required": true,
           "content": {
@@ -227,7 +241,7 @@ export const openapiSpec = {
     "/notifications/v1/count": {
       "get": {
         "summary": "Contar notificações não lidas",
-        "tags": ["notifications"],
+        "tags": ["Notification - Notificações"],
         "responses": {
           "200": {
             "description": "Número de notificações não lidas",
@@ -248,7 +262,7 @@ export const openapiSpec = {
     "/notifications/v1/{id}/read": {
       "put": {
         "summary": "Marcar notificação como lida",
-        "tags": ["notifications"],
+        "tags": ["Notification - Notificações"],
         "parameters": [
           {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
         ],
@@ -265,7 +279,7 @@ export const openapiSpec = {
     "/notifications/v1/read-all": {
       "put": {
         "summary": "Marcar todas notificações como lidas",
-        "tags": ["notifications"],
+        "tags": ["Notification - Notificações"],
         "responses": {
           "200": {
             "description": "Todas notificações marcadas como lidas",
