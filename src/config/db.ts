@@ -21,6 +21,8 @@ pool.on('error', (err: any) => {
 export async function withClient<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
+    await client.query("SET timezone = 'America/Sao_Paulo'");
+    
     const schema = (process.env.PG_SCHEMA || '').replace(/[^a-zA-Z0-9_]/g, '');
     if (schema) await client.query(`set search_path to ${schema}, public`);
     return await fn(client);
