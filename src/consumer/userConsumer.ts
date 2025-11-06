@@ -132,7 +132,7 @@ export async function startConsumer() {
                     'role_change',
                     authUserId,
                     { 
-                      nova_role: event.payload.roles,
+                      nova_role: event.payload.role,
                       permissoes: 'novas permissões'
                     },
                     'role_change',
