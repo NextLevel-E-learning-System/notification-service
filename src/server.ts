@@ -4,7 +4,7 @@ import cors from 'cors';
 import { logger } from './config/logger.js';
 import { loadOpenApi } from './config/openapi.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { filaRouter, notificationRouter, templateRouter } from './routes/routes.js';
+import { notificationRouter } from './routes/routes.js';
 
 export function createServer() {
   const app = express();
@@ -29,10 +29,7 @@ app.get('/openapi.json', async (_req,res)=> {
   }
 });
 
-// Estrutura de rotas reorganizada e mais clara
-app.use('/notifications/v1', notificationRouter);           // Notificações in-app
-app.use('/notifications/v1/templates', templateRouter);     // Templates para notificações in-app
-app.use('/notifications/v1/email', filaRouter);                    // Fila de emails
+app.use('/notifications/v1', notificationRouter);
 app.use(errorHandler);
   return app;
 }
