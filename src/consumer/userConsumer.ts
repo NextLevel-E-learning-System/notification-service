@@ -1,7 +1,7 @@
 import { ConsumeMessage } from 'amqplib';
 import { connectRabbitMQ } from "../config/rabbitmq.js";
 import { sendRegistrationEmail, sendPasswordResetEmail } from "../services/emailService.js";
-import { createNotification, getAuthUserIdByFuncionarioId } from "../services/notificationService.js";
+import { getAuthUserIdByFuncionarioId } from "../services/notificationService.js";
 import { createNotificationFromTemplate } from "../services/templateService.js";
 
 const EXCHANGE_USER = process.env.EXCHANGE_USER || 'user.events';
@@ -20,25 +20,12 @@ async function assertBindings(channel: any) {
   const userEventKeys = [
     'user.created',
     'user.password_reset', 
-    'user.role_changed',
-    'user.updated',
-    'user.deactivated'
+    'user.role_changed'
   ];
   for (const routingKey of userEventKeys) {
     await channel.bindQueue(QUEUE_NOTIFICATION_USER, EXCHANGE_USER, routingKey);
   }
   
-  // Auth events - eventos do auth-service
-  const authEventKeys = [
-    'auth.login',
-    'auth.logout', 
-    'auth.token_refresh',
-    'auth.user_created',
-    'auth.user_password_ephemeral'
-  ];
-  for (const routingKey of authEventKeys) {
-    await channel.bindQueue(QUEUE_NOTIFICATION_AUTH, EXCHANGE_AUTH, routingKey);
-  }
 }
 
 export async function startConsumer() {
@@ -132,8 +119,7 @@ export async function startConsumer() {
                     'role_change',
                     authUserId,
                     { 
-                      nova_role: event.payload.role,
-                      permissoes: 'novas permissões'
+                      nova_role: event.payload.role
                     },
                     'role_change',
                     'app'
@@ -147,42 +133,6 @@ export async function startConsumer() {
               }
               break;
               
-            case 'user.updated':
-              // Criar notificação de atualização de perfil
-              try {
-                const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
-                if (authUserId) {
-                  await createNotification({
-                    funcionario_id: authUserId,
-                    titulo: '✏️ Perfil Atualizado',
-                    mensagem: 'Suas informações de perfil foram atualizadas com sucesso.',
-                    tipo: 'profile_update',
-                    canal: 'app'
-                  });
-                }
-              } catch (notifError) {
-                console.error('[notification-service] Erro criando notificação de update:', notifError);
-              }
-              break;
-              
-            case 'user.deactivated':
-              // Criar notificação de desativação (se o usuário ainda tem acesso)
-              try {
-                const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
-                if (authUserId) {
-                  await createNotification({
-                    funcionario_id: authUserId,
-                    titulo: '⚠️ Conta Desativada',
-                    mensagem: 'Sua conta foi desativada. Entre em contato com o administrador para mais informações.',
-                    tipo: 'account_deactivated',
-                    canal: 'app'
-                  });
-                }
-              } catch (notifError) {
-                console.error('[notification-service] Erro criando notificação de desativação:', notifError);
-              }
-              break;
-              
             default:
               console.log(`[notification-service] Evento user desconhecido: ${event.type}`);
           }
@@ -193,55 +143,4 @@ export async function startConsumer() {
         }
       });
 
-  // Consumer para eventos de autenticação
-  channel.consume(QUEUE_NOTIFICATION_AUTH, async (msg: ConsumeMessage | null) => {
-    if (!msg) return;
-    try {
-      const event = JSON.parse(msg.content.toString());
-      console.log(`[notification-service] Processando evento auth: ${event.type}`, event.payload);
-      
-      switch (event.type) {
-        case 'auth.user_created':
-          // Evento persistido sem senha: neste momento não enviamos email com credenciais.
-          // Opcional: enviar email de boas-vindas genérico ou acionar fluxo de criação de senha via link.
-          console.log('[notification-service] auth.user_created recebido (sem senha) - nenhum email enviado');
-          break;
-        case 'auth.user_password_ephemeral':
-          // Evento efêmero contendo a senha real (não armazenada em DB no auth-service)
-          if (event.payload?.email && event.payload?.senha) {
-            try {
-              await sendRegistrationEmail({
-                nome: event.payload.nome || 'Usuário',
-                email: event.payload.email,
-                senha: event.payload.senha
-              });
-              console.log('[notification-service] Email de registro enviado com sucesso para:', event.payload.email);
-            } catch (emailErr) {
-              // Log do erro mas não fazer throw - deixar que fique na fila para retry
-              console.error('[notification-service] Falha no envio imediato, email salvo na fila para retry:', (emailErr as Error).message);
-            }
-          } else {
-            console.warn('[notification-service] auth.user_password_ephemeral sem email ou senha válidos');
-          }
-          break;
-          
-        case 'auth.logout':
-          console.log(`[notification-service] Logout registrado: usuário ${event.payload.userId}`);
-          // Não criar notificação para logout por ser muito comum
-          break;
-          
-        case 'auth.token_refresh':
-          // Não criar notificação para refresh por ser automático
-          console.log(`[notification-service] Token refresh: usuário ${event.payload.userId}`);
-          break;
-          
-        default:
-          console.log(`[notification-service] Evento auth desconhecido: ${event.type}`);
-      }
-      channel.ack(msg);
-    } catch (err) {
-      console.error('[notification-service] Erro processando evento auth:', err);
-      channel.nack(msg, false, false);
-    }
-  });
 }
