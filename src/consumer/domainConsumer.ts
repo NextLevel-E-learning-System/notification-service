@@ -56,6 +56,7 @@ interface AssessmentPayload {
   userId: string;
   assessmentCode?: string;
   courseId?: string;
+  courseTitle?: string;
   score?: number;
 }
 
@@ -98,7 +99,6 @@ async function handleProgressModule(event: ServiceEvent<ModuleCompletedPayload>)
     {
       modulo_id: payload.moduleId ?? '',
       curso_titulo: payload.courseTitle ?? payload.courseId ?? '',
-      curso_codigo: payload.courseId ?? '',
       xp_ganho: payload.xpEarned ?? 0,
       progresso_percentual: payload.progressPercent ?? 0
     },
@@ -119,7 +119,6 @@ async function handleProgressCourse(event: ServiceEvent<CourseCompletedPayload>)
     authUserId,
     {
       curso_titulo: payload.courseTitle ?? payload.courseId ?? '',
-      curso_codigo: payload.courseId ?? '',
       progresso_total: payload.totalProgress ?? 100
     },
     'progress_update',
@@ -139,7 +138,7 @@ async function handleAssessment(event: ServiceEvent<AssessmentPayload>, template
     authUserId,
     {
       avaliacao_codigo: payload.assessmentCode ?? '',
-      curso_id: payload.courseId ?? '',
+      curso_titulo: payload.courseTitle ?? payload.courseId ?? '',
       nota: payload.score ?? 0
     },
     'assessment_update',
@@ -159,7 +158,6 @@ async function handleCertificate(event: ServiceEvent<CertificatePayload>) {
     authUserId,
     {
       curso_titulo: payload.courseTitle ?? payload.courseId ?? '',
-      curso_codigo: payload.courseId ?? '',
       codigo_certificado: payload.certificateCode ?? ''
     },
     'certificate',
