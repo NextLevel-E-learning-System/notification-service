@@ -20,7 +20,8 @@ async function assertBindings(channel: any) {
   const userEventKeys = [
     'user.created',
     'user.password_reset', 
-    'user.role_changed'
+    'user.role_changed',
+    'user.updated'
   ];
   for (const routingKey of userEventKeys) {
     await channel.bindQueue(QUEUE_NOTIFICATION_USER, EXCHANGE_USER, routingKey);
@@ -130,6 +131,47 @@ export async function startConsumer() {
                 }
               } catch (notifError) {
                 console.error('[notification-service] Erro criando notificação de role:', notifError);
+              }
+              break;
+              
+            case 'user.updated':
+              try {
+                const changes = event.payload?.changes ?? {};
+                const changedKeys = Object.keys(changes);
+                if (changedKeys.length === 0) {
+                  break;
+                }
+
+                const authUserId = await getAuthUserIdByFuncionarioId(event.payload.userId);
+                if (!authUserId) {
+                  console.warn('[notification-service] user.updated sem auth_user_id mapeado (ignorado)');
+                  break;
+                }
+
+                const labels: Record<string, string> = {
+                  nome: 'Nome',
+                  email: 'Email',
+                  departamento_id: 'Departamento',
+                  cargo_nome: 'Cargo'
+                };
+
+                const camposAlterados = changedKeys
+                  .map(key => labels[key] || key)
+                  .join(', ');
+
+                const templateVars: Record<string, string> = {
+                  campos_alterados: camposAlterados
+                };
+
+                await createNotificationFromTemplate(
+                  'profile_update',
+                  authUserId,
+                  templateVars,
+                  'profile_update',
+                  'app'
+                );
+              } catch (notifError) {
+                console.error('[notification-service] Erro criando notificação de user.updated:', notifError);
               }
               break;
               
