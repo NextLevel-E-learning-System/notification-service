@@ -40,6 +40,7 @@ interface ModuleCompletedPayload {
   userId: string;
   moduleId?: string;
   courseId?: string;
+  courseTitle?: string;
   xpEarned?: number;
   progressPercent?: number;
 }
@@ -47,6 +48,7 @@ interface ModuleCompletedPayload {
 interface CourseCompletedPayload {
   userId: string;
   courseId?: string;
+  courseTitle?: string;
   totalProgress?: number;
 }
 
@@ -60,6 +62,7 @@ interface AssessmentPayload {
 interface CertificatePayload {
   userId: string;
   courseId?: string;
+  courseTitle?: string;
   certificateCode?: string;
 }
 
@@ -94,7 +97,8 @@ async function handleProgressModule(event: ServiceEvent<ModuleCompletedPayload>)
     authUserId,
     {
       modulo_id: payload.moduleId ?? '',
-      curso_id: payload.courseId ?? '',
+      curso_titulo: payload.courseTitle ?? payload.courseId ?? '',
+      curso_codigo: payload.courseId ?? '',
       xp_ganho: payload.xpEarned ?? 0,
       progresso_percentual: payload.progressPercent ?? 0
     },
@@ -114,7 +118,8 @@ async function handleProgressCourse(event: ServiceEvent<CourseCompletedPayload>)
     'progress_course_completed',
     authUserId,
     {
-      curso_id: payload.courseId ?? '',
+      curso_titulo: payload.courseTitle ?? payload.courseId ?? '',
+      curso_codigo: payload.courseId ?? '',
       progresso_total: payload.totalProgress ?? 100
     },
     'progress_update',
@@ -153,7 +158,8 @@ async function handleCertificate(event: ServiceEvent<CertificatePayload>) {
     'certificate_issued',
     authUserId,
     {
-      curso_id: payload.courseId ?? '',
+      curso_titulo: payload.courseTitle ?? payload.courseId ?? '',
+      curso_codigo: payload.courseId ?? '',
       codigo_certificado: payload.certificateCode ?? ''
     },
     'certificate',
