@@ -20,16 +20,19 @@ function buildTransporter() {
   }
   const enableDebug = process.env.SMTP_DEBUG === 'true'
   transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    host,
+    port,
+    secure: false, // TLS na porta 587
+    auth: {
+      user,
+      pass,
+    },
     tls: {
       rejectUnauthorized: false,
     },
-    connectionTimeout: 60000, // 60 segundos
-    greetingTimeout: 30000, // 30 segundos
-    socketTimeout: 60000, // 60 segundos
+    greetingTimeout: 20000,
+    connectionTimeout: 20000,
+    socketTimeout: 20000,
   })
   if (enableDebug) {
     console.log('[email][transporter_created]', { host, port, user })
@@ -47,7 +50,7 @@ export async function sendMail(to: string, subject: string, text: string, html?:
     )
   })
 
-  const from = process.env.SMTP_FROM || 'nextlevel.elearning@gmail.com'
+  const from = process.env.SMTP_USER || 'nextlevel.elearning@gmail.com'
   const transporter = buildTransporter()
 
   try {
@@ -55,8 +58,8 @@ export async function sendMail(to: string, subject: string, text: string, html?:
       from,
       to,
       subject,
-      text,
       html: html || `<pre>${text}</pre>`,
+      text,
     })
 
     const messageId = info.messageId || 'gmail-' + Date.now()
