@@ -46,11 +46,12 @@ export async function sendMail(to: string, subject: string, text: string, html?:
     )
   })
 
+  const from = process.env.SMTP_FROM || 'nextlevel.elearning@gmail.com'
   const transporter = buildTransporter()
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM,
+      from,
       to,
       subject,
       text,
