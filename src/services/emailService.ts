@@ -7,18 +7,36 @@ import type {
 } from '../types/index.js'
 import nodemailer from 'nodemailer'
 
-// Configuração SMTP (Gmail)
-const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com'
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587')
-const SMTP_USER = process.env.SMTP_USER
-const SMTP_PASS = process.env.SMTP_PASS
-const SMTP_FROM = process.env.SMTP_FROM || 'nextlevel.elearning@gmail.com'
+let transporter: nodemailer.Transporter | null = null
+
+function buildTransporter() {
+  if (transporter) return transporter
+  const host = process.env.SMTP_HOST
+  const port = parseInt(process.env.SMTP_PORT || '587', 10)
+  const user = process.env.SMTP_USER
+  const pass = process.env.SMTP_PASS
+  if (!host || !user || !pass) {
+    throw new Error('smtp_nao_configurado')
+  }
+  const enableDebug = process.env.SMTP_DEBUG === 'true'
+  transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+    tls: {
+      rejectUnauthorized: false,
+    },
+    logger: enableDebug,
+    debug: enableDebug,
+  })
+  if (enableDebug) {
+    console.log('[email][transporter_created]', { host, port, user })
+  }
+  return transporter
+}
 
 export async function sendMail(to: string, subject: string, text: string, html?: string) {
-  if (!SMTP_USER || !SMTP_PASS) {
-    throw new Error('SMTP_USER ou SMTP_PASS não configuradas no .env')
-  }
-
   // Sempre salvar na fila primeiro
   await withClient(async c => {
     await c.query(
@@ -28,20 +46,11 @@ export async function sendMail(to: string, subject: string, text: string, html?:
     )
   })
 
-  // Criar transporter Gmail
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: false, // true para porta 465, false para outras
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  })
+  const transporter = buildTransporter()
 
   try {
     const info = await transporter.sendMail({
-      from: SMTP_FROM,
+      from: process.env.SMTP_FROM,
       to,
       subject,
       text,
