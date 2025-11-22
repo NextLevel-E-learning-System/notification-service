@@ -12,7 +12,7 @@ let transporter: nodemailer.Transporter | null = null
 function buildTransporter() {
   if (transporter) return transporter
   const host = process.env.SMTP_HOST
-  const port = parseInt(process.env.SMTP_PORT || '465', 10)
+  const port = parseInt(process.env.SMTP_PORT || '587', 10)
   const user = process.env.SMTP_USER
   const pass = process.env.SMTP_PASS
   if (!host || !user || !pass) {
@@ -27,6 +27,11 @@ function buildTransporter() {
     tls: {
       rejectUnauthorized: false,
     },
+    connectionTimeout: 60000, // 60 segundos
+    greetingTimeout: 30000, // 30 segundos
+    socketTimeout: 60000, // 60 segundos
+    pool: true, // usar pool de conexões
+    maxConnections: 5,
     logger: enableDebug,
     debug: enableDebug,
   })
