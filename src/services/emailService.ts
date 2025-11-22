@@ -99,13 +99,8 @@ export async function sendRegistrationEmail(
   params: EmailRegistrationParams
 ): Promise<EmailSendResult> {
   const html = buildPasswordTemplate({ tipo: 'register', senha: params.senha })
-  const subject = '🎓 Acesso Criado - NextLevel'
-  const text = `Bem-vindo ao NextLevel! Sua senha temporária é: ${params.senha}`
-
-  console.log('[email][registration_attempt]', {
-    to: params.email,
-    senha: '***' + params.senha.slice(-3), // mostra só os 3 últimos dígitos
-  })
+  const subject = '[NextLevel] 🎓 Nova conta'
+  const text = `Bem-vindo a NextLevel! Sua senha é: ${params.senha}`
 
   try {
     const result = await sendMail(params.email, subject, text, html)
@@ -125,7 +120,7 @@ export async function sendPasswordResetEmail(
   params: EmailPasswordResetParams
 ): Promise<EmailSendResult> {
   const html = buildPasswordTemplate({ tipo: 'reset', senha: params.novaSenha })
-  const subject = '🔐 Senha Redefinida - NextLevel'
+  const subject = '[NextLevel] 🔐 Redefinição de Senha'
   const text = `Sua senha foi redefinida. Nova senha: ${params.novaSenha}`
 
   try {
