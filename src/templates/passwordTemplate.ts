@@ -3,8 +3,20 @@ export function buildPasswordTemplate(params: { tipo: 'register' | 'reset'; senh
   const safeSenha = senha.replace(/</g, '&lt;').replace(/>/g, '&gt;')
   const systemName = 'NextLevel E-learning System'
   const year = new Date().getFullYear()
-  const titleText = tipo === 'register' ? 'Bem-vindo(a)' : 'Redefinição de senha'
+  const titleText = tipo === 'register' ? 'Bem-vindo(a)' : 'Senha redefinida'
   const actionText = 'Use a senha abaixo para fazer seu login:'
+
+  // Logo NextLevel em base64 (ícone de livro/graduação)
+  const logoBase64 =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTUwIDgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iODAiIGZpbGw9InRyYW5zcGFyZW50Ii8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDAgMTUpIj48cGF0aCBkPSJNMzUgNWwtMzAgMTB2MzBsMzAgMTAgMzAtMTBWMTV6IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zNSAyNXYyMCIgc3Ryb2tlPSIjM2Q1Y2EzIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMjAgMzBsMTUgNSAxNS01IiBzdHJva2U9IiMzZDVjYTMiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPjwvZz48dGV4dCB4PSI3NSIgeT0iNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmZmZmYiPlNleHRMZXZlbDwvdGV4dD48L3N2Zz4='
+
+  // Ícone de email em base64
+  const emailIconBase64 =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTc1IiBoZWlnaHQ9IjE3NSIgdmlld0JveD0iMCAwIDE3NSAxNzUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iODcuNSIgY3k9Ijg3LjUiIHI9Ijg1IiBmaWxsPSIjM2Q1Y2EzIi8+PGNpcmNsZSBjeD0iODcuNSIgY3k9Ijg3LjUiIHI9IjY1IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTU1IDcwaDY1djM1SDU1eiIgZmlsbD0iIzNkNWNhMyIvPjxwYXRoIGQ9Ik01NSA3MGwzMiAyMCAzMi0yMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4='
+
+  // Background gradient azul (base64 de 1x100px)
+  const backgroundBase64 =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDYwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojM2Q1Y2EzO3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMmE0NDhiO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9InVybCgjZ3JhZCkiLz48L3N2Zz4='
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="pt">
@@ -63,13 +75,13 @@ a[x-apple-data-detectors],#MessageViewBody a {color:inherit!important;text-decor
           <td align="center" class="es-adaptive" style="padding:0;Margin:0">
            <table cellspacing="0" cellpadding="0" bgcolor="#3d5ca3" align="center" class="es-header-body" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;background-color:#3D5CA3;width:600px" role="none">
              <tr style="border-collapse:collapse">
-              <td align="left" background="https://fwurcif.stripocdn.email/content/guids/CABINET_112efbf2b7fdaa9566e70d14a2294afa7330a36c054b2038b95a508d08fa26a1/images/chatgpt_image_4_de_set_de_2025_21_40_20.png" style="padding:10px;Margin:0;background-image:url(https://fwurcif.stripocdn.email/content/guids/CABINET_112efbf2b7fdaa9566e70d14a2294afa7330a36c054b2038b95a508d08fa26a1/images/chatgpt_image_4_de_set_de_2025_21_40_20.png);background-repeat:repeat;background-position:left top;background-size:cover">
+              <td align="left" background="${backgroundBase64}" style="padding:10px;Margin:0;background-image:url(${backgroundBase64});background-repeat:repeat;background-position:left top;background-size:cover">
                <table cellspacing="0" cellpadding="0" align="left" class="es-left" role="none" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left">
                  <tr style="border-collapse:collapse">
                   <td align="left" style="padding:0;Margin:0;width:580px">
                    <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
                      <tr style="border-collapse:collapse">
-                      <td align="center" style="padding:0;Margin:0;font-size:0"><img src="https://fwurcif.stripocdn.email/content/guids/CABINET_112efbf2b7fdaa9566e70d14a2294afa7330a36c054b2038b95a508d08fa26a1/images/logo.png" alt="NextLevel Logo" width="150" class="img-6091" style="display:block;font-size:14px;border:0;outline:none;text-decoration:none;margin:0"></td>
+                      <td align="center" style="padding:0;Margin:0;font-size:0"><img src="${logoBase64}" alt="NextLevel Logo" width="150" class="img-6091" style="display:block;font-size:14px;border:0;outline:none;text-decoration:none;margin:0"></td>
                      </tr>
                    </table></td>
                  </tr>
@@ -89,7 +101,7 @@ a[x-apple-data-detectors],#MessageViewBody a {color:inherit!important;text-decor
                   <td valign="top" align="center" style="padding:0;Margin:0;width:560px">
                    <table width="100%" cellspacing="0" cellpadding="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;background-position:left top" role="presentation">
                      <tr style="border-collapse:collapse">
-                      <td align="center" style="padding:0;Margin:0;padding-top:5px;padding-bottom:5px;font-size:0"><img src="https://fwurcif.stripocdn.email/content/guids/CABINET_dd354a98a803b60e2f0411e893c82f56/images/23891556799905703.png" alt="Email Icon" width="175" style="display:block;font-size:14px;border:0;outline:none;text-decoration:none;margin:0"></td>
+                      <td align="center" style="padding:0;Margin:0;padding-top:5px;padding-bottom:5px;font-size:0"><img src="${emailIconBase64}" alt="Email Icon" width="175" style="display:block;font-size:14px;border:0;outline:none;text-decoration:none;margin:0"></td>
                      </tr>
                      <tr style="border-collapse:collapse">
                       <td align="center" style="padding:0;Margin:0;padding-top:15px;padding-bottom:15px"><h1 style="Margin:0;font-family:arial, 'helvetica neue', helvetica, sans-serif;mso-line-height-rule:exactly;letter-spacing:0;font-size:20px;font-style:normal;font-weight:normal;line-height:24px;color:#333333">${titleText}</h1></td>
@@ -112,7 +124,7 @@ a[x-apple-data-detectors],#MessageViewBody a {color:inherit!important;text-decor
           <td bgcolor="#fafafa" align="center" style="padding:0;Margin:0;background-color:#FAFAFA">
            <table cellspacing="0" cellpadding="0" bgcolor="#ffffff" align="center" class="es-footer-body" role="none" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;background-color:transparent;width:600px">
              <tr style="border-collapse:collapse">
-              <td align="left" background="https://fwurcif.stripocdn.email/content/guids/CABINET_112efbf2b7fdaa9566e70d14a2294afa7330a36c054b2038b95a508d08fa26a1/images/chatgpt_image_4_de_set_de_2025_21_40_20.png" style="Margin:0;padding-right:20px;padding-left:20px;padding-top:10px;padding-bottom:10px;background-position:left top;background-image:url(https://fwurcif.stripocdn.email/content/guids/CABINET_112efbf2b7fdaa9566e70d14a2294afa7330a36c054b2038b95a508d08fa26a1/images/chatgpt_image_4_de_set_de_2025_21_40_20.png);background-repeat:no-repeat;background-size:cover">
+              <td align="left" background="${backgroundBase64}" style="Margin:0;padding-right:20px;padding-left:20px;padding-top:10px;padding-bottom:10px;background-position:left top;background-image:url(${backgroundBase64});background-repeat:no-repeat;background-size:cover">
                <table width="100%" cellspacing="0" cellpadding="0" role="none" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
                  <tr style="border-collapse:collapse">
                   <td valign="top" align="center" style="padding:0;Margin:0;width:560px">
