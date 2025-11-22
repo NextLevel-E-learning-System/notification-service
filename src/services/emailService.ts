@@ -5,42 +5,16 @@ import type {
   EmailPasswordResetParams,
   EmailSendResult,
 } from '../types/index.js'
-import nodemailer from 'nodemailer'
 
-let transporter: nodemailer.Transporter | null = null
-
-function buildTransporter() {
-  if (transporter) return transporter
-  const host = process.env.SMTP_HOST
-  const port = parseInt(process.env.SMTP_PORT || '587', 10)
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
-  if (!host || !user || !pass) {
-    throw new Error('smtp_nao_configurado')
-  }
-  const enableDebug = process.env.SMTP_DEBUG === 'true'
-  transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: false, // TLS na porta 587
-    auth: {
-      user,
-      pass,
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-    greetingTimeout: 20000,
-    connectionTimeout: 20000,
-    socketTimeout: 20000,
-  })
-  if (enableDebug) {
-    console.log('[email][transporter_created]', { host, port, user })
-  }
-  return transporter
-}
+// Configuração SendGrid
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
+const SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'nextlevel.elearning@gmail.com'
 
 export async function sendMail(to: string, subject: string, text: string, html?: string) {
+  if (!SENDGRID_API_KEY) {
+    throw new Error('SENDGRID_API_KEY não configurada no .env')
+  }
+
   // Sempre salvar na fila primeiro
   await withClient(async c => {
     await c.query(
@@ -50,19 +24,37 @@ export async function sendMail(to: string, subject: string, text: string, html?:
     )
   })
 
-  const from = process.env.SMTP_USER || 'nextlevel.elearning@gmail.com'
-  const transporter = buildTransporter()
+  // Envio via SendGrid API
+  const sgData = {
+    personalizations: [
+      {
+        to: [{ email: to }],
+        subject: subject,
+      },
+    ],
+    from: { email: SENDGRID_FROM_EMAIL },
+    content: [
+      { type: 'text/plain', value: text },
+      { type: 'text/html', value: html || `<pre>${text}</pre>` },
+    ],
+  }
 
   try {
-    const info = await transporter.sendMail({
-      from,
-      to,
-      subject,
-      html: html || `<pre>${text}</pre>`,
-      text,
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${SENDGRID_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(sgData),
     })
 
-    const messageId = info.messageId || 'gmail-' + Date.now()
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`SendGrid error ${response.status}: ${errorText}`)
+    }
+
+    const messageId = response.headers.get('x-message-id') || 'sendgrid-' + Date.now()
 
     // Marcar como enviado na fila
     await withClient(async c => {
@@ -73,8 +65,8 @@ export async function sendMail(to: string, subject: string, text: string, html?:
       )
     })
 
-    console.log('[email][sent]', { to, subject, messageId, provider: 'gmail' })
-    return { messageId, provider: 'gmail' }
+    console.log('[email][sent]', { to, subject, messageId, status: response.status })
+    return { messageId, provider: 'sendgrid' }
   } catch (err) {
     console.error('[email][failed]', { to, subject, err: (err as Error).message })
     // Email fica na fila como PENDENTE para retry posterior
@@ -87,7 +79,7 @@ export async function sendRegistrationEmail(
 ): Promise<EmailSendResult> {
   const html = buildPasswordTemplate({ tipo: 'register', senha: params.senha })
   const subject = '🎓 Acesso Criado - NextLevel'
-  const text = `Bem-vindo ao NextLevel! Sua senha é: ${params.senha}`
+  const text = `Bem-vindo ao NextLevel! Sua senha temporária é: ${params.senha}`
 
   console.log('[email][registration_attempt]', {
     to: params.email,
