@@ -1,8 +1,8 @@
 import { withClient } from '../config/db.js'
 import { buildPasswordTemplate } from '../templates/passwordTemplate.js'
-import type {
-  EmailRegistrationParams,
+import {
   EmailPasswordResetParams,
+  EmailRegistrationParams,
   EmailSendResult,
 } from '../types/index.js'
 
@@ -33,31 +33,10 @@ export async function sendMail(to: string, subject: string, text: string, html?:
       },
     ],
     from: { email: SENDGRID_FROM_EMAIL },
-    reply_to: { email: SENDGRID_FROM_EMAIL },
     content: [
       { type: 'text/plain', value: text },
       { type: 'text/html', value: html || `<pre>${text}</pre>` },
     ],
-    tracking_settings: {
-      click_tracking: {
-        enable: true,
-        enable_text: false,
-      },
-      open_tracking: {
-        enable: true,
-      },
-      subscription_tracking: {
-        enable: true,
-      },
-    },
-    asm: {
-      group_id: 32740, // Substitua pelo ID do seu Unsubscribe Group no SendGrid
-    },
-    mail_settings: {
-      bypass_list_management: {
-        enable: false,
-      },
-    },
   }
 
   try {
@@ -100,7 +79,7 @@ export async function sendRegistrationEmail(
 ): Promise<EmailSendResult> {
   const html = buildPasswordTemplate({ tipo: 'register', senha: params.senha })
   const subject = '[NextLevel] 🎓 Nova conta'
-  const text = `Bem-vindo a NextLevel! Sua senha é: ${params.senha}`
+  const text = `Bem-vindo ao NextLevel! Sua senha é: ${params.senha}`
 
   try {
     const result = await sendMail(params.email, subject, text, html)
@@ -119,9 +98,9 @@ export async function sendRegistrationEmail(
 export async function sendPasswordResetEmail(
   params: EmailPasswordResetParams
 ): Promise<EmailSendResult> {
-  const html = buildPasswordTemplate({ tipo: 'reset', senha: params.novaSenha })
+  const html = buildPasswordTemplate({ tipo: 'reset', senha: params.senha })
   const subject = '[NextLevel] 🔐 Redefinição de Senha'
-  const text = `Sua senha foi redefinida. Nova senha: ${params.novaSenha}`
+  const text = `Sua senha foi redefinida. Nova senha: ${params.senha}`
 
   try {
     const result = await sendMail(params.email, subject, text, html)
