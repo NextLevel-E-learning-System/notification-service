@@ -20,20 +20,16 @@ function buildTransporter() {
   }
   const enableDebug = process.env.SMTP_DEBUG === 'true'
   transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     tls: {
       rejectUnauthorized: false,
     },
     connectionTimeout: 60000, // 60 segundos
     greetingTimeout: 30000, // 30 segundos
     socketTimeout: 60000, // 60 segundos
-    pool: true, // usar pool de conexões
-    maxConnections: 5,
-    logger: enableDebug,
-    debug: enableDebug,
   })
   if (enableDebug) {
     console.log('[email][transporter_created]', { host, port, user })
