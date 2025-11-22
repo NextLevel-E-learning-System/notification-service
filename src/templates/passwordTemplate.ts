@@ -1,12 +1,12 @@
-export function buildPasswordTemplate(params: { tipo: 'register' | 'reset'; senha: string;}) {
-  const { tipo, senha } = params;
-  const safeSenha = senha.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const systemName = 'NextLevel E-learning System';
-  const year = new Date().getFullYear();
-  const titleText = tipo === 'register' ? 'Bem-vindo(a)' : 'Redefinição de senha';
-  const actionText = 'Use a senha abaixo para fazer seu login:';
+export function buildPasswordTemplate(params: { tipo: 'register' | 'reset'; senha: string }) {
+  const { tipo, senha } = params
+  const safeSenha = senha.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const systemName = 'NextLevel E-learning System'
+  const year = new Date().getFullYear()
+  const titleText = tipo === 'register' ? 'Bem-vindo(a)' : 'Redefinição de senha'
+  const actionText = 'Use a senha abaixo para fazer seu login:'
 
-    return  `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="pt">
      <head>
       <meta charset="UTF-8">
@@ -154,5 +154,5 @@ export function buildPasswordTemplate(params: { tipo: 'register' | 'reset'; senh
        </table>
       </div>
      </body>
-    </html>`;
+    </html>`
 }

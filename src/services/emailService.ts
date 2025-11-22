@@ -33,10 +33,31 @@ export async function sendMail(to: string, subject: string, text: string, html?:
       },
     ],
     from: { email: SENDGRID_FROM_EMAIL },
+    reply_to: { email: SENDGRID_FROM_EMAIL },
     content: [
       { type: 'text/plain', value: text },
       { type: 'text/html', value: html || `<pre>${text}</pre>` },
     ],
+    tracking_settings: {
+      click_tracking: {
+        enable: true,
+        enable_text: false,
+      },
+      open_tracking: {
+        enable: true,
+      },
+      subscription_tracking: {
+        enable: true,
+      },
+    },
+    asm: {
+      group_id: 32740, // Substitua pelo ID do seu Unsubscribe Group no SendGrid
+    },
+    mail_settings: {
+      bypass_list_management: {
+        enable: false,
+      },
+    },
   }
 
   try {
